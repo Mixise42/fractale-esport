@@ -1,78 +1,98 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fractale Esport</title>
-
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #10121c;
-            color: white;
-            text-align: center;
-        }
-
-        header {
-            padding: 70px 20px;
-            background: linear-gradient(135deg, #25205a, #10121c);
-        }
-
-        h1 {
-            font-size: 45px;
-            color: #a58aff;
-        }
-
-        section {
-            padding: 40px 20px;
-        }
-
-        .button {
-            display: inline-block;
-            padding: 15px 25px;
-            background: #8264ed;
-            color: white;
-            text-decoration: none;
-            border-radius: 10px;
-        }
-
-        footer {
-            padding: 20px;
-            background: #080910;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<header>
-    <h1>FRACTALE ESPORT</h1>
-    <p>Une structure, une passion, un objectif.</p>
-    <a class="button" href="https://discord.gg/eaBTAnPZxQ">
-        Rejoindre Discord
-    </a>
-</header>
+<div class="app">
 
-<section>
-    <h2>Bienvenue chez Fractale Esport</h2>
-    <p>
-        Fractale Esport est une structure dédiée à Rocket League.
-        Nous réunissons des joueurs de tous les ranks
-        dans une communauté passionnée.
-    </p>
-</section>
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-mark">F</div>
+            <div>
+                <strong>FRACTALE</strong>
+                <span>ESPORT</span>
+            </div>
+        </div>
 
-<section>
-    <h2>Pourquoi nous rejoindre ?</h2>
-    <p>🤝 Une communauté active</p>
-    <p>🎮 Des joueurs de tous niveaux</p>
-    <p>🏆 Des projets compétitifs</p>
-</section>
+        <button class="switch-button" id="serverMode">🏠 Serveur</button>
+        <button class="switch-button" id="dmMode">✉ Messages privés</button>
 
-<footer>
-    © 2026 Fractale Esport
-</footer>
+        <div id="serverPanel">
+            <h3>INFORMATIONS</h3>
+            <button class="channel active" data-channel="annonces">📢 annonces</button>
+            <button class="channel" data-channel="reglement">📜 règlement</button>
 
+            <h3>COMMUNAUTÉ</h3>
+            <button class="channel" data-channel="general">💬 général</button>
+            <button class="channel" data-channel="presentations">👋 présentations</button>
+            <button class="channel" data-channel="medias">🖼 médias</button>
+
+            <h3>ROCKET LEAGUE</h3>
+            <button class="channel" data-channel="rocket">🚗 discussion</button>
+            <button class="channel" data-channel="mates">🎮 recherche de mates</button>
+            <button class="channel" data-channel="freestyle">✨ freestyle</button>
+
+            <h3>COMPÉTITION</h3>
+            <button class="channel" data-channel="tournois">🏆 tournois</button>
+            <button class="channel" data-channel="recrutement">📋 recrutement</button>
+
+            <h3>SUPPORT</h3>
+            <button class="channel" data-channel="aide">❓ aide</button>
+            <button class="channel" data-channel="suggestions">💡 suggestions</button>
+        </div>
+
+        <div id="dmPanel" hidden>
+            <h3>MESSAGERIE PRIVÉE</h3>
+            <p class="muted">Tes conversations apparaîtront ici.</p>
+        </div>
+
+        <div class="profile">
+            <div class="avatar">F</div>
+            <div>
+                <strong>Mon profil</strong>
+                <small>Connecte-toi bientôt</small>
+            </div>
+            <button title="Profil">⚙</button>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div>
+                <span class="online-dot"></span>
+                <strong id="pageTitle"># annonces</strong>
+            </div>
+            <button id="aiMode">✦ Mode IA</button>
+        </header>
+
+        <section class="messages" id="messages">
+            <div class="welcome">
+                <div class="welcome-icon">F</div>
+                <h1>Bienvenue sur Fractale Esport</h1>
+                <p>Une structure, une passion, un objectif.</p>
+                <p class="muted">Sélectionne un salon pour commencer à discuter.</p>
+            </div>
+        </section>
+
+        <form class="message-form" id="messageForm">
+            <input
+                id="messageInput"
+                type="text"
+                placeholder="Écrire un message..."
+                autocomplete="off"
+            >
+            <button type="submit">Envoyer ➤</button>
+        </form>
+    </main>
+
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
