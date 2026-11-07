@@ -2,8 +2,8 @@
 // CONFIGURATION SUPABASE
 // ======================================
 
-const SUPABASE_URL = "COLLE_ICI_TON_PROJECT_URL";
-const SUPABASE_PUBLISHABLE_KEY = "COLLE_ICI_TA_CLE_PUBLISHABLE";
+const SUPABASE_URL = "https://hyqmkilzbuouventplui.supabase.co/rest/v1/";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ZVP0vVJvaM4n9mbgmKh4uQ_-VlGVU35";
 
 let supabaseClient = null;
 let currentUser = null;
