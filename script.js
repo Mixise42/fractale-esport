@@ -2,7 +2,7 @@
 // CONFIGURATION SUPABASE
 // ======================================
 
-const SUPABASE_URL = "https://hyqmkilzbuouventplui.supabase.co/rest/v1/";
+const SUPABASE_URL = "https://hyqmkilzbuouventplui.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ZVP0vVJvaM4n9mbgmKh4uQ_-VlGVU35";
 
 let supabaseClient = null;
