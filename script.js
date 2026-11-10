@@ -49,13 +49,24 @@ const serverPanel = $("serverPanel");
 const dmPanel = $("dmPanel");
 const aiMode = $("aiMode");
 const adminButton = $("adminButton");
+const ticketsButton = $("ticketsButton");
+const rankCategories = $("rankCategories");
+
+// ======================================
+// VISIBILITÉ DU BOUTON ADMINISTRATION
+// ======================================
+
 function updateAdminVisibility() {
+    if (!adminButton) return;
+
     adminButton.hidden =
         currentRole !== "founder" ||
         !["server", "admin"].includes(currentMode);
 }
-const ticketsButton = $("ticketsButton");
-const rankCategories = $("rankCategories");
+
+// ======================================
+// CATÉGORIES DE RANG
+// ======================================
 
 const rankLabels = {
     "moins-de-diamant": "Moins de diamant",
@@ -101,14 +112,23 @@ function setLoading(loading) {
 
 function setAuthMode(mode) {
     authMode = mode;
+
     const isRegister = mode === "register";
 
     loginTab.classList.toggle("active", !isRegister);
     registerTab.classList.toggle("active", isRegister);
+
     usernameGroup.hidden = !isRegister;
     usernameInput.required = isRegister;
-    passwordInput.autocomplete = isRegister ? "new-password" : "current-password";
-    authSubmit.textContent = isRegister ? "Créer mon compte" : "Se connecter";
+
+    passwordInput.autocomplete = isRegister
+        ? "new-password"
+        : "current-password";
+
+    authSubmit.textContent = isRegister
+        ? "Créer mon compte"
+        : "Se connecter";
+
     showAuthMessage("");
 }
 
@@ -119,7 +139,10 @@ authForm.addEventListener("submit", async event => {
     event.preventDefault();
 
     if (!supabaseClient) {
-        showAuthMessage("La connexion Supabase n'est pas configurée.", true);
+        showAuthMessage(
+            "La connexion Supabase n'est pas configurée.",
+            true
+        );
         return;
     }
 
@@ -128,7 +151,10 @@ authForm.addEventListener("submit", async event => {
     const username = usernameInput.value.trim();
 
     if (authMode === "register" && username.length < 3) {
-        showAuthMessage("Ton pseudo doit contenir au moins 3 caractères.", true);
+        showAuthMessage(
+            "Ton pseudo doit contenir au moins 3 caractères.",
+            true
+        );
         return;
     }
 
@@ -140,24 +166,31 @@ authForm.addEventListener("submit", async event => {
             const { data, error } = await supabaseClient.auth.signUp({
                 email,
                 password,
-                options: { data: { username } }
+                options: {
+                    data: { username }
+                }
             });
 
             if (error) throw error;
 
-            showAuthMessage(data.session
-                ? "Compte créé avec succès !"
-                : "Compte créé ! Consulte ta boîte e-mail pour confirmer ton adresse."
+            showAuthMessage(
+                data.session
+                    ? "Compte créé avec succès !"
+                    : "Compte créé ! Consulte ta boîte e-mail pour confirmer ton adresse."
             );
         } else {
             const { error } = await supabaseClient.auth.signInWithPassword({
                 email,
                 password
             });
+
             if (error) throw error;
         }
     } catch (error) {
-        showAuthMessage(error.message || "Une erreur est survenue.", true);
+        showAuthMessage(
+            error.message || "Une erreur est survenue.",
+            true
+        );
     } finally {
         setLoading(false);
     }
@@ -178,8 +211,13 @@ async function loadProfile(user) {
         .eq("id", user.id)
         .maybeSingle();
 
-    if (profileError) console.error("Erreur profil :", profileError.message);
-    if (profile?.username) username = profile.username;
+    if (profileError) {
+        console.error("Erreur profil :", profileError.message);
+    }
+
+    if (profile?.username) {
+        username = profile.username;
+    }
 
     profileName.textContent = username;
     profileAvatar.textContent = username.charAt(0).toUpperCase();
@@ -191,11 +229,23 @@ async function loadProfile(user) {
         .eq("user_id", user.id)
         .maybeSingle();
 
-    currentRole = roleError ? "member" : (roleData?.role || "member");
+    currentRole = roleError
+        ? "member"
+        : (roleData?.role || "member");
 
-    const staff = ["founder", "cofounder", "moderator"].includes(currentRole);
-    adminButton.hidden = currentRole !== "founder";
-    $("staffCategory").hidden = !staff;
+    const staff = [
+        "founder",
+        "cofounder",
+        "moderator"
+    ].includes(currentRole);
+
+    updateAdminVisibility();
+
+    const staffCategory = $("staffCategory");
+
+    if (staffCategory) {
+        staffCategory.hidden = !staff;
+    }
 
     const { data: rankData, error: rankError } = await supabaseClient
         .from("member_rank_roles")
@@ -204,7 +254,11 @@ async function loadProfile(user) {
         .maybeSingle();
 
     if (rankError) {
-        console.error("Erreur chargement rang :", rankError.message);
+        console.error(
+            "Erreur chargement rang :",
+            rankError.message
+        );
+
         currentRank = null;
     } else {
         currentRank = rankData?.rank_category || null;
@@ -222,8 +276,11 @@ function renderRankCategories() {
 
     if (!currentRank || !rankLabels[currentRank]) {
         const info = document.createElement("p");
+
         info.className = "muted rank-loading";
-        info.textContent = "Aucune catégorie de rang ne t'a encore été attribuée.";
+        info.textContent =
+            "Aucune catégorie de rang ne t'a encore été attribuée.";
+
         rankCategories.appendChild(info);
         return;
     }
@@ -233,29 +290,50 @@ function renderRankCategories() {
 
     const toggle = document.createElement("button");
     toggle.className = "category-toggle";
-    toggle.innerHTML = `<span>${rankLabels[currentRank]}</span><span>⌄</span>`;
+
+    toggle.innerHTML = `
+        <span>${rankLabels[currentRank]}</span>
+        <span>⌄</span>
+    `;
+
     toggle.setAttribute("aria-expanded", "true");
 
     const content = document.createElement("div");
     content.className = "category-content";
 
     const rankChannels = [
-        { name: "💬 Général", slug: "general" },
-        { name: "📊 RL Tracker", slug: "rl-tracker" }
+        {
+            name: "💬 Général",
+            slug: "general"
+        },
+        {
+            name: "📊 RL Tracker",
+            slug: "rl-tracker"
+        }
     ];
 
     rankChannels.forEach(item => {
         const button = document.createElement("button");
+
         button.className = "channel";
         button.textContent = item.name;
-        button.dataset.channel = `rank-${currentRank}-${item.slug}`;
-        button.addEventListener("click", () => selectChannel(button));
+        button.dataset.channel =
+            `rank-${currentRank}-${item.slug}`;
+
+        button.addEventListener("click", () => {
+            selectChannel(button);
+        });
+
         content.appendChild(button);
     });
 
     toggle.addEventListener("click", () => {
         const collapsed = category.classList.toggle("collapsed");
-        toggle.setAttribute("aria-expanded", String(!collapsed));
+
+        toggle.setAttribute(
+            "aria-expanded",
+            String(!collapsed)
+        );
     });
 
     category.append(toggle, content);
@@ -271,21 +349,32 @@ async function handleSession(session) {
         currentUser = null;
         currentRole = "member";
         currentRank = null;
-        adminButton.hidden = true;
+        currentMode = "server";
+
+        updateAdminVisibility();
+
         $("staffCategory").hidden = true;
+
         showAuthScreen();
         return;
     }
 
     currentUser = session.user;
+
     showApp();
+
     await loadProfile(currentUser);
 }
 
 async function initialiseAuth() {
     if (!window.supabase?.createClient) {
         showAuthScreen();
-        showAuthMessage("Impossible de charger Supabase. Vérifie ta connexion Internet.", true);
+
+        showAuthMessage(
+            "Impossible de charger Supabase. Vérifie ta connexion Internet.",
+            true
+        );
+
         return;
     }
 
@@ -295,18 +384,30 @@ async function initialiseAuth() {
             SUPABASE_PUBLISHABLE_KEY
         );
 
-        const { data, error } = await supabaseClient.auth.getSession();
+        const { data, error } =
+            await supabaseClient.auth.getSession();
+
         if (error) throw error;
 
         await handleSession(data.session);
 
-        supabaseClient.auth.onAuthStateChange((event, session) => {
-            Promise.resolve().then(() => handleSession(session));
-        });
+        supabaseClient.auth.onAuthStateChange(
+            (event, session) => {
+                Promise.resolve().then(() => {
+                    handleSession(session);
+                });
+            }
+        );
     } catch (error) {
         console.error(error);
+
         showAuthScreen();
-        showAuthMessage("Impossible de se connecter à Supabase : " + error.message, true);
+
+        showAuthMessage(
+            "Impossible de se connecter à Supabase : " +
+            error.message,
+            true
+        );
     }
 }
 
@@ -316,8 +417,12 @@ async function initialiseAuth() {
 
 logoutButton.addEventListener("click", async () => {
     if (!supabaseClient) return;
+
     const { error } = await supabaseClient.auth.signOut();
-    if (error) alert("Erreur lors de la déconnexion : " + error.message);
+
+    if (error) {
+        alert("Erreur lors de la déconnexion : " + error.message);
+    }
 });
 
 // ======================================
@@ -327,8 +432,13 @@ logoutButton.addEventListener("click", async () => {
 document.querySelectorAll(".category-toggle").forEach(button => {
     button.addEventListener("click", () => {
         const category = button.closest(".category");
+
         const collapsed = category.classList.toggle("collapsed");
-        button.setAttribute("aria-expanded", String(!collapsed));
+
+        button.setAttribute(
+            "aria-expanded",
+            String(!collapsed)
+        );
     });
 });
 
@@ -350,19 +460,27 @@ function showWelcome(title = "Bienvenue sur Fractale Esport") {
     heading.textContent = title;
 
     const description = document.createElement("p");
-    description.textContent = "Une structure, une passion, un objectif.";
+    description.textContent =
+        "Une structure, une passion, un objectif.";
 
     const note = document.createElement("p");
     note.className = "muted";
-    note.textContent = "La sauvegarde des messages de salons sera ajoutée dans une prochaine étape.";
+
+    note.textContent =
+        "La sauvegarde des messages de salons sera ajoutée dans une prochaine étape.";
 
     welcome.append(icon, heading, description, note);
+
     messages.appendChild(welcome);
 }
 
 function selectChannel(button) {
     if (button.dataset.channel.startsWith("rank-")) {
-        const rankFromChannel = button.dataset.channel.split("-").slice(1, -1).join("-");
+        const rankFromChannel = button.dataset.channel
+            .split("-")
+            .slice(1, -1)
+            .join("-");
+
         if (rankFromChannel !== currentRank) {
             alert("Cette catégorie ne correspond pas à ton rang.");
             return;
@@ -374,23 +492,32 @@ function selectChannel(button) {
     });
 
     button.classList.add("active");
+
     currentChannel = button.dataset.channel;
     currentMode = "server";
 
+    updateAdminVisibility();
+
     serverPanel.hidden = false;
     dmPanel.hidden = true;
+
     serverMode.classList.add("selected");
     dmMode.classList.remove("selected");
+
     ticketsButton.classList.remove("selected");
 
     pageTitle.textContent = button.textContent.trim();
+
     messageForm.hidden = false;
     messageInput.placeholder = "Écrire un message...";
+
     showWelcome("Salon " + button.textContent.trim());
 }
 
 document.querySelectorAll("#serverPanel .channel").forEach(button => {
-    button.addEventListener("click", () => selectChannel(button));
+    button.addEventListener("click", () => {
+        selectChannel(button);
+    });
 });
 
 // ======================================
@@ -399,25 +526,41 @@ document.querySelectorAll("#serverPanel .channel").forEach(button => {
 
 serverMode.addEventListener("click", () => {
     currentMode = "server";
+
+    updateAdminVisibility();
+
     serverPanel.hidden = false;
     dmPanel.hidden = true;
+
     serverMode.classList.add("selected");
     dmMode.classList.remove("selected");
+
     ticketsButton.classList.remove("selected");
+
     pageTitle.textContent = "# " + currentChannel;
+
     messageForm.hidden = false;
+
     showWelcome();
 });
 
 dmMode.addEventListener("click", () => {
     currentMode = "dm";
+
+    updateAdminVisibility();
+
     serverPanel.hidden = true;
     dmPanel.hidden = false;
+
     dmMode.classList.add("selected");
     serverMode.classList.remove("selected");
+
     ticketsButton.classList.remove("selected");
+
     pageTitle.textContent = "Messages privés";
+
     messageForm.hidden = true;
+
     showWelcome("Messages privés");
 });
 
@@ -427,9 +570,11 @@ dmMode.addEventListener("click", () => {
 
 messageForm.addEventListener("submit", event => {
     event.preventDefault();
+
     if (!currentUser || currentMode !== "server") return;
 
     const content = messageInput.value.trim();
+
     if (!content) return;
 
     const message = document.createElement("div");
@@ -442,9 +587,11 @@ messageForm.addEventListener("submit", event => {
     text.textContent = content;
 
     message.append(author, text);
+
     messages.appendChild(message);
 
     messageInput.value = "";
+
     messages.scrollTop = messages.scrollHeight;
 });
 
@@ -454,8 +601,13 @@ messageForm.addEventListener("submit", event => {
 
 aiMode.addEventListener("click", () => {
     currentMode = "ai";
+
+    updateAdminVisibility();
+
     pageTitle.textContent = "✦ Mode IA";
+
     messageForm.hidden = true;
+
     showWelcome("Assistant Fractale");
 });
 
@@ -465,8 +617,15 @@ aiMode.addEventListener("click", () => {
 
 function createAdminElement(tag, className, content) {
     const element = document.createElement(tag);
-    if (className) element.className = className;
-    if (content !== undefined) element.textContent = content;
+
+    if (className) {
+        element.className = className;
+    }
+
+    if (content !== undefined) {
+        element.textContent = content;
+    }
+
     return element;
 }
 
@@ -486,45 +645,91 @@ async function openAdministration() {
     }
 
     currentMode = "admin";
+
+    updateAdminVisibility();
+
     pageTitle.textContent = "⚙ Administration";
+
     messageForm.hidden = true;
     messages.innerHTML = "";
 
-    const heading = createAdminElement("h1", "admin-heading", "Administration");
-    const description = createAdminElement("p", "muted",
-        "Gestion des membres et des rôles de Fractale Esport.");
-    const status = createAdminElement("p", "admin-status", "Chargement des membres...");
+    const heading = createAdminElement(
+        "h1",
+        "admin-heading",
+        "Administration"
+    );
+
+    const description = createAdminElement(
+        "p",
+        "muted",
+        "Gestion des membres et des rôles de Fractale Esport."
+    );
+
+    const status = createAdminElement(
+        "p",
+        "admin-status",
+        "Chargement des membres..."
+    );
+
     const list = createAdminElement("div", "admin-list");
 
     messages.append(heading, description, status, list);
 
-    const { data, error } = await supabaseClient.rpc("get_site_members");
+    const { data, error } =
+        await supabaseClient.rpc("get_site_members");
 
     if (error) {
-        status.textContent = "Impossible de charger les membres : " + error.message;
+        status.textContent =
+            "Impossible de charger les membres : " + error.message;
+
         status.classList.add("error");
+
         return;
     }
 
-    status.textContent = `${data.length} membre(s) trouvé(s).`;
+    status.textContent =
+        `${data.length} membre(s) trouvé(s).`;
 
     data.forEach(member => {
         const card = createAdminElement("div", "admin-member");
-        const info = createAdminElement("div", "admin-member-info");
-        const name = createAdminElement("strong", "", member.username || "Membre");
-        const role = createAdminElement("span", "admin-role", roleLabel(member.role));
+
+        const info = createAdminElement(
+            "div",
+            "admin-member-info"
+        );
+
+        const name = createAdminElement(
+            "strong",
+            "",
+            member.username || "Membre"
+        );
+
+        const role = createAdminElement(
+            "span",
+            "admin-role",
+            roleLabel(member.role)
+        );
+
         info.append(name, role);
 
         if (member.role_created_at) {
-            info.appendChild(createAdminElement(
-                "small", "admin-date",
-                "Rôle attribué le " + new Date(member.role_created_at).toLocaleDateString("fr-FR")
-            ));
+            info.appendChild(
+                createAdminElement(
+                    "small",
+                    "admin-date",
+                    "Rôle attribué le " +
+                    new Date(member.role_created_at)
+                        .toLocaleDateString("fr-FR")
+                )
+            );
         }
 
         card.appendChild(info);
 
-        if (member.role !== "founder" && member.user_id !== currentUser.id) {
+        if (
+            member.role !== "founder" &&
+            member.user_id !== currentUser.id
+        ) {
             const select = document.createElement("select");
             select.className = "role-select";
 
@@ -534,37 +739,53 @@ async function openAdministration() {
                 ["cofounder", "Cofondateur"]
             ].forEach(([value, label]) => {
                 const option = document.createElement("option");
+
                 option.value = value;
                 option.textContent = label;
                 option.selected = value === member.role;
+
                 select.appendChild(option);
             });
 
-            const save = createAdminElement("button", "role-save", "Enregistrer");
+            const save = createAdminElement(
+                "button",
+                "role-save",
+                "Enregistrer"
+            );
 
             save.addEventListener("click", async () => {
                 save.disabled = true;
                 save.textContent = "Enregistrement...";
 
-                const { error: updateError } = await supabaseClient.rpc("set_site_role", {
-                    target_user: member.user_id,
-                    new_role: select.value
-                });
+                const { error: updateError } =
+                    await supabaseClient.rpc("set_site_role", {
+                        target_user: member.user_id,
+                        new_role: select.value
+                    });
 
                 if (updateError) {
                     alert("Erreur : " + updateError.message);
+
                     save.disabled = false;
                     save.textContent = "Enregistrer";
+
                     return;
                 }
 
                 alert("Rôle mis à jour.");
+
                 await openAdministration();
             });
 
             card.append(select, save);
         } else {
-            card.appendChild(createAdminElement("span", "protected-role", "Compte protégé"));
+            card.appendChild(
+                createAdminElement(
+                    "span",
+                    "protected-role",
+                    "Compte protégé"
+                )
+            );
         }
 
         list.appendChild(card);
@@ -580,54 +801,107 @@ adminButton.addEventListener("click", openAdministration);
 function ticketHeading(title, description) {
     messages.innerHTML = "";
 
-    const heading = createAdminElement("h1", "admin-heading", title);
-    const text = createAdminElement("p", "muted", description);
+    const heading = createAdminElement(
+        "h1",
+        "admin-heading",
+        title
+    );
+
+    const text = createAdminElement(
+        "p",
+        "muted",
+        description
+    );
+
     messages.append(heading, text);
 }
 
 async function openTickets() {
     currentMode = "tickets";
+
+    updateAdminVisibility();
+
     selectedTicket = null;
+
     serverPanel.hidden = true;
     dmPanel.hidden = true;
+
     serverMode.classList.remove("selected");
     dmMode.classList.remove("selected");
+
     ticketsButton.classList.add("selected");
+
     pageTitle.textContent = "🎫 Tickets";
+
     messageForm.hidden = true;
 
-    ticketHeading("Centre de support", "Ouvre un ticket pour contacter l'équipe Fractale Esport.");
+    ticketHeading(
+        "Centre de support",
+        "Ouvre un ticket pour contacter l'équipe Fractale Esport."
+    );
 
     const form = createAdminElement("form", "ticket-form");
-    const title = createAdminElement("h2", "", "Créer un ticket");
 
-    const label = createAdminElement("label", "", "Sujet de ta demande");
+    const title = createAdminElement(
+        "h2",
+        "",
+        "Créer un ticket"
+    );
+
+    const label = createAdminElement(
+        "label",
+        "",
+        "Sujet de ta demande"
+    );
+
     label.htmlFor = "ticketSubject";
 
     const input = document.createElement("input");
+
     input.id = "ticketSubject";
     input.maxLength = 100;
     input.minLength = 3;
     input.required = true;
     input.placeholder = "Exemple : Demande d'aide";
 
-    const detailsLabel = createAdminElement("label", "", "Explique ta demande");
+    const detailsLabel = createAdminElement(
+        "label",
+        "",
+        "Explique ta demande"
+    );
+
     detailsLabel.htmlFor = "ticketDetails";
 
     const details = document.createElement("textarea");
+
     details.id = "ticketDetails";
     details.maxLength = 2000;
     details.required = true;
     details.placeholder = "Décris ta demande...";
 
-    const submit = createAdminElement("button", "primary-button", "Ouvrir le ticket");
+    const submit = createAdminElement(
+        "button",
+        "primary-button",
+        "Ouvrir le ticket"
+    );
+
     submit.type = "submit";
 
     const status = createAdminElement("p", "muted", "");
-    form.append(title, label, input, detailsLabel, details, submit, status);
+
+    form.append(
+        title,
+        label,
+        input,
+        detailsLabel,
+        details,
+        submit,
+        status
+    );
 
     form.addEventListener("submit", async event => {
         event.preventDefault();
+
         submit.disabled = true;
         status.textContent = "Création du ticket...";
 
@@ -655,7 +929,10 @@ async function openTickets() {
             });
 
         if (messageError) {
-            status.textContent = "Ticket créé, mais le premier message n'a pas pu être envoyé : " + messageError.message;
+            status.textContent =
+                "Ticket créé, mais le premier message n'a pas pu être envoyé : " +
+                messageError.message;
+
             submit.disabled = false;
             return;
         }
@@ -663,7 +940,12 @@ async function openTickets() {
         await openTicket(ticket);
     });
 
-    const listTitle = createAdminElement("h2", "", "Tes tickets");
+    const listTitle = createAdminElement(
+        "h2",
+        "",
+        "Tes tickets"
+    );
+
     const list = createAdminElement("div", "ticket-list");
 
     messages.append(form, listTitle, list);
@@ -674,73 +956,162 @@ async function openTickets() {
         .order("created_at", { ascending: false });
 
     if (error) {
-        list.appendChild(createAdminElement("p", "admin-status error",
-            "Impossible de charger les tickets : " + error.message));
+        list.appendChild(
+            createAdminElement(
+                "p",
+                "admin-status error",
+                "Impossible de charger les tickets : " + error.message
+            )
+        );
+
         return;
     }
 
     if (!tickets.length) {
-        list.appendChild(createAdminElement("p", "muted", "Aucun ticket pour le moment."));
+        list.appendChild(
+            createAdminElement(
+                "p",
+                "muted",
+                "Aucun ticket pour le moment."
+            )
+        );
+
         return;
     }
 
     tickets.forEach(ticket => {
         const card = createAdminElement("div", "ticket-card");
-        const info = createAdminElement("div", "ticket-card-info");
-        const subject = createAdminElement("strong", "", ticket.subject);
-        const date = createAdminElement("small", "",
-            new Date(ticket.created_at).toLocaleString("fr-FR"));
-        const state = createAdminElement("span",
-            ticket.status === "closed" ? "ticket-status closed" : "ticket-status",
-            ticket.status === "closed" ? "Fermé" : "Ouvert");
+
+        const info = createAdminElement(
+            "div",
+            "ticket-card-info"
+        );
+
+        const subject = createAdminElement(
+            "strong",
+            "",
+            ticket.subject
+        );
+
+        const date = createAdminElement(
+            "small",
+            "",
+            new Date(ticket.created_at).toLocaleString("fr-FR")
+        );
+
+        const state = createAdminElement(
+            "span",
+            ticket.status === "closed"
+                ? "ticket-status closed"
+                : "ticket-status",
+            ticket.status === "closed" ? "Fermé" : "Ouvert"
+        );
 
         info.append(subject, date, state);
 
-        const open = createAdminElement("button", "", "Voir le ticket");
-        open.addEventListener("click", () => openTicket(ticket));
+        const open = createAdminElement(
+            "button",
+            "",
+            "Voir le ticket"
+        );
+
+        open.addEventListener("click", () => {
+            openTicket(ticket);
+        });
 
         card.append(info, open);
+
         list.appendChild(card);
     });
 }
 
+// ======================================
+// CONVERSATION D'UN TICKET
+// ======================================
+
 async function openTicket(ticket) {
     selectedTicket = ticket;
+
     currentMode = "ticket";
+
+    updateAdminVisibility();
+
     pageTitle.textContent = "🎫 " + ticket.subject;
+
     messageForm.hidden = true;
 
-    ticketHeading(ticket.subject, "Conversation privée avec l'équipe Fractale Esport.");
+    ticketHeading(
+        ticket.subject,
+        "Conversation privée avec l'équipe Fractale Esport."
+    );
 
-    const conversation = createAdminElement("div", "ticket-conversation");
-    const status = createAdminElement("p", "muted", "Chargement des messages...");
+    const conversation = createAdminElement(
+        "div",
+        "ticket-conversation"
+    );
+
+    const status = createAdminElement(
+        "p",
+        "muted",
+        "Chargement des messages..."
+    );
+
     const messageList = createAdminElement("div", "");
+
     conversation.append(status, messageList);
 
-    const actions = createAdminElement("div", "ticket-actions");
-    const back = createAdminElement("button", "", "← Retour aux tickets");
+    const actions = createAdminElement(
+        "div",
+        "ticket-actions"
+    );
+
+    const back = createAdminElement(
+        "button",
+        "",
+        "← Retour aux tickets"
+    );
+
     back.addEventListener("click", openTickets);
+
     actions.appendChild(back);
 
     if (ticket.status === "open") {
-        const close = createAdminElement("button", "", "Fermer le ticket");
+        const close = createAdminElement(
+            "button",
+            "",
+            "Fermer le ticket"
+        );
+
         close.addEventListener("click", async () => {
-            if (!confirm("Veux-tu vraiment fermer ce ticket ?")) return;
+            if (!confirm("Veux-tu vraiment fermer ce ticket ?")) {
+                return;
+            }
 
             close.disabled = true;
-            const { error } = await supabaseClient.rpc("close_site_ticket", {
-                target_ticket: ticket.id
-            });
+
+            const { error } = await supabaseClient.rpc(
+                "close_site_ticket",
+                {
+                    target_ticket: ticket.id
+                }
+            );
 
             if (error) {
-                alert("Impossible de fermer le ticket : " + error.message);
+                alert(
+                    "Impossible de fermer le ticket : " +
+                    error.message
+                );
+
                 close.disabled = false;
+
                 return;
             }
 
             alert("Ticket fermé.");
+
             await openTickets();
         });
+
         actions.appendChild(close);
     }
 
@@ -755,38 +1126,77 @@ async function openTicket(ticket) {
     messageList.innerHTML = "";
 
     if (error) {
-        status.textContent = "Impossible de charger les messages : " + error.message;
+        status.textContent =
+            "Impossible de charger les messages : " + error.message;
+
         messages.appendChild(conversation);
+
         return;
     }
 
-    status.textContent = ticket.status === "closed" ? "Ticket fermé" : "Ticket ouvert";
+    status.textContent =
+        ticket.status === "closed"
+            ? "Ticket fermé"
+            : "Ticket ouvert";
 
     data.forEach(item => {
-        const block = createAdminElement("div", "ticket-message");
-        const author = createAdminElement("small", "",
-            item.user_id === currentUser.id ? "Toi" : "Membre du support");
-        const content = createAdminElement("p", "", item.content);
-        const date = createAdminElement("small", "",
-            new Date(item.created_at).toLocaleString("fr-FR"));
+        const block = createAdminElement(
+            "div",
+            "ticket-message"
+        );
+
+        const author = createAdminElement(
+            "small",
+            "",
+            item.user_id === currentUser.id
+                ? "Toi"
+                : "Membre du support"
+        );
+
+        const content = createAdminElement(
+            "p",
+            "",
+            item.content
+        );
+
+        const date = createAdminElement(
+            "small",
+            "",
+            new Date(item.created_at).toLocaleString("fr-FR")
+        );
+
         block.append(author, content, date);
+
         messageList.appendChild(block);
     });
 
     if (ticket.status === "open") {
-        const reply = createAdminElement("form", "ticket-reply");
+        const reply = createAdminElement(
+            "form",
+            "ticket-reply"
+        );
+
         const input = document.createElement("input");
+
         input.placeholder = "Écrire une réponse...";
         input.maxLength = 2000;
         input.required = true;
 
-        const send = createAdminElement("button", "primary-button", "Envoyer");
+        const send = createAdminElement(
+            "button",
+            "primary-button",
+            "Envoyer"
+        );
+
         send.type = "submit";
+
         reply.append(input, send);
 
         reply.addEventListener("submit", async event => {
             event.preventDefault();
+
             const content = input.value.trim();
+
             if (!content) return;
 
             send.disabled = true;
@@ -800,8 +1210,12 @@ async function openTicket(ticket) {
                 });
 
             if (error) {
-                alert("Erreur lors de l'envoi : " + error.message);
+                alert(
+                    "Erreur lors de l'envoi : " + error.message
+                );
+
                 send.disabled = false;
+
                 return;
             }
 
@@ -812,6 +1226,7 @@ async function openTicket(ticket) {
     }
 
     messages.appendChild(conversation);
+
     messages.scrollTop = messages.scrollHeight;
 }
 
