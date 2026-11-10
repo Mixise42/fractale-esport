@@ -49,6 +49,11 @@ const serverPanel = $("serverPanel");
 const dmPanel = $("dmPanel");
 const aiMode = $("aiMode");
 const adminButton = $("adminButton");
+function updateAdminVisibility() {
+    adminButton.hidden =
+        currentRole !== "founder" ||
+        !["server", "admin"].includes(currentMode);
+}
 const ticketsButton = $("ticketsButton");
 const rankCategories = $("rankCategories");
 
