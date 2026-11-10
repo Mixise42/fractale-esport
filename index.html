@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -25,22 +24,19 @@
         <form id="authForm">
             <div class="form-group" id="usernameGroup" hidden>
                 <label for="usernameInput">Pseudo</label>
-                <input id="usernameInput" type="text" placeholder="Ton pseudo"
-                    maxlength="24" autocomplete="username">
+                <input id="usernameInput" type="text" maxlength="24"
+                    placeholder="Ton pseudo" autocomplete="username">
             </div>
-
             <div class="form-group">
                 <label for="emailInput">Adresse e-mail</label>
-                <input id="emailInput" type="email" placeholder="exemple@email.com"
-                    autocomplete="email" required>
+                <input id="emailInput" type="email" required
+                    placeholder="exemple@email.com" autocomplete="email">
             </div>
-
             <div class="form-group">
                 <label for="passwordInput">Mot de passe</label>
-                <input id="passwordInput" type="password" placeholder="Ton mot de passe"
-                    minlength="6" autocomplete="current-password" required>
+                <input id="passwordInput" type="password" minlength="6"
+                    required placeholder="Ton mot de passe">
             </div>
-
             <button type="submit" class="auth-submit" id="authSubmit">Se connecter</button>
         </form>
 
@@ -58,29 +54,60 @@
 
         <button class="switch-button selected" id="serverMode">🏠 Serveur</button>
         <button class="switch-button" id="dmMode">✉ Messages privés</button>
+        <button class="switch-button" id="ticketsButton">🎫 Tickets</button>
 
         <div id="serverPanel">
-            <h3>INFORMATIONS</h3>
-            <button class="channel active" data-channel="annonces">📢 annonces</button>
-            <button class="channel" data-channel="reglement">📜 règlement</button>
+            <div class="category">
+                <button class="category-toggle" aria-expanded="true">🏠 Accueil <span>⌄</span></button>
+                <div class="category-content">
+                    <button class="channel active" data-channel="reglement">📜 Règlement</button>
+                    <button class="channel" data-channel="partenariat">🤝 Partenariat</button>
+                    <button class="channel" data-channel="membres">🔊 Membres</button>
+                </div>
+            </div>
 
-            <h3>COMMUNAUTÉ</h3>
-            <button class="channel" data-channel="general">💬 général</button>
-            <button class="channel" data-channel="presentations">👋 présentations</button>
-            <button class="channel" data-channel="medias">🖼 médias</button>
+            <div class="category">
+                <button class="category-toggle" aria-expanded="true">📁 Information <span>⌄</span></button>
+                <div class="category-content">
+                    <button class="channel" data-channel="annonces">📢 Annonces</button>
+                    <button class="channel" data-channel="recrutement">📋 Recrutement</button>
+                    <button class="channel" data-channel="sondage">📊 Sondage</button>
+                    <button class="channel" data-channel="evenement">🎉 Événement</button>
+                    <button class="channel" data-channel="effectif-officiel">👥 Effectif-officiel</button>
+                    <button class="channel" data-channel="resultat-scrim">🏆 Résultat-scrim</button>
+                    <button class="channel" data-channel="tournois">🏟️ Tournois</button>
+                    <button class="channel" data-channel="roles">🎭 Rôles</button>
+                </div>
+            </div>
 
-            <h3>ROCKET LEAGUE</h3>
-            <button class="channel" data-channel="rocket">🚗 discussion</button>
-            <button class="channel" data-channel="mates">🎮 recherche de mates</button>
-            <button class="channel" data-channel="freestyle">✨ freestyle</button>
+            <div class="category">
+                <button class="category-toggle" aria-expanded="true">⚙ Communauté <span>⌄</span></button>
+                <div class="category-content">
+                    <button class="channel" data-channel="chat">💬 Chat</button>
+                    <button class="channel" data-channel="images">🖼️ Images</button>
+                    <button class="channel" data-channel="clips">🎬 Clips</button>
+                    <button class="channel" data-channel="preset">🚗 Preset</button>
+                    <button class="channel" data-channel="settings">⚙️ Settings</button>
+                    <button class="channel" data-channel="niveaux">📈 Niveaux</button>
+                    <button class="channel" data-channel="compteur">🔢 Compteur</button>
+                    <button class="channel" data-channel="reputations">🌟 Réputations</button>
+                    <button class="channel" data-channel="suggestion">💡 Suggestions</button>
+                </div>
+            </div>
 
-            <h3>COMPÉTITION</h3>
-            <button class="channel" data-channel="tournois">🏆 tournois</button>
-            <button class="channel" data-channel="recrutement">📋 recrutement</button>
+            <div class="category" id="staffCategory" hidden>
+                <button class="category-toggle" aria-expanded="true">🛡️ Staff <span>⌄</span></button>
+                <div class="category-content">
+                    <button class="channel" data-channel="moderation">🛡️ Modération</button>
+                    <button class="channel" data-channel="signalements">🚨 Signalements</button>
+                    <button class="channel" data-channel="staff-chat">💬 Staff-chat</button>
+                </div>
+            </div>
 
-            <h3>SUPPORT</h3>
-            <button class="channel" data-channel="aide">❓ aide</button>
-            <button class="channel" data-channel="suggestions">💡 suggestions</button>
+            <div class="rank-separator">CATÉGORIES DE RANG</div>
+            <div id="rankCategories">
+                <p class="muted rank-loading">Chargement de ton rang...</p>
+            </div>
         </div>
 
         <div id="dmPanel" hidden>
@@ -104,7 +131,7 @@
         <header class="topbar">
             <div>
                 <span class="online-dot"></span>
-                <strong id="pageTitle"># annonces</strong>
+                <strong id="pageTitle"># règlement</strong>
             </div>
             <button id="aiMode">✦ Mode IA</button>
         </header>
