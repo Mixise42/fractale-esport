@@ -14,6 +14,7 @@ let currentChannel = "reglement";
 let currentMode = "server";
 let authMode = "login";
 let selectedTicket = null;
+let aiHistory = [];
 
 // ======================================
 // ELEMENTS HTML
@@ -596,19 +597,177 @@ messageForm.addEventListener("submit", event => {
 });
 
 // ======================================
-// MODE IA
+// MODE IA - ASSISTANT FRACTALE
 // ======================================
+
+function addAIMessage(container, role, content) {
+    const message = document.createElement("div");
+    message.className = `ai-message ${role}`;
+
+    const author = document.createElement("strong");
+    author.textContent = role === "user"
+        ? profileName.textContent
+        : "✦ Assistant Fractale";
+
+    const text = document.createElement("p");
+    text.textContent = content;
+
+    message.append(author, text);
+    container.appendChild(message);
+
+    return message;
+}
+
+function renderAIAssistant() {
+    messages.innerHTML = "";
+
+    const panel = document.createElement("div");
+    panel.className = "ai-panel";
+
+    const heading = document.createElement("div");
+    heading.className = "ai-heading";
+
+    const title = document.createElement("h1");
+    title.textContent = "✦ Assistant Fractale";
+
+    const description = document.createElement("p");
+    description.textContent =
+        "Pose tes questions sur Rocket League et Fractale Esport.";
+
+    heading.append(title, description);
+
+    const chat = document.createElement("div");
+    chat.className = "ai-chat";
+
+    aiHistory.forEach(item => {
+        addAIMessage(chat, item.role, item.content);
+    });
+
+    if (aiHistory.length === 0) {
+        const welcome = document.createElement("div");
+        welcome.className = "ai-empty";
+        welcome.textContent =
+            "Salut ! Je suis l'assistant de Fractale Esport. Que souhaites-tu savoir ?";
+        chat.appendChild(welcome);
+    }
+
+    const form = document.createElement("form");
+    form.className = "ai-form";
+
+    const input = document.createElement("textarea");
+    input.className = "ai-input";
+    input.placeholder = "Pose ta question...";
+    input.maxLength = 600;
+    input.rows = 2;
+    input.required = true;
+
+    const send = document.createElement("button");
+    send.type = "submit";
+    send.className = "ai-send";
+    send.textContent = "Envoyer ➤";
+
+    form.append(input, send);
+    panel.append(heading, chat, form);
+    messages.appendChild(panel);
+
+    form.addEventListener("submit", async event => {
+        event.preventDefault();
+
+        const content = input.value.trim();
+
+        if (!content || !currentUser || !supabaseClient) return;
+
+        if (content.length > 600) {
+            alert("Ton message est trop long.");
+            return;
+        }
+
+        const historyForApi = [
+            ...aiHistory,
+            {
+                role: "user",
+                content
+            }
+        ].slice(-8);
+
+        addAIMessage(chat, "user", content);
+
+        input.value = "";
+        input.disabled = true;
+        send.disabled = true;
+        send.textContent = "Réponse...";
+
+        const waiting = document.createElement("p");
+        waiting.className = "ai-waiting";
+        waiting.textContent = "L'assistant réfléchit...";
+        chat.appendChild(waiting);
+
+        chat.scrollTop = chat.scrollHeight;
+
+        try {
+            const { data, error } =
+                await supabaseClient.functions.invoke(
+                    "assistant-fractale",
+                    {
+                        body: {
+                            messages: historyForApi
+                        }
+                    }
+                );
+
+            if (error) throw error;
+
+            if (!data?.reply) {
+                throw new Error(
+                    "L'assistant n'a pas envoyé de réponse."
+                );
+            }
+
+            aiHistory = [
+                ...historyForApi,
+                {
+                    role: "assistant",
+                    content: data.reply
+                }
+            ].slice(-8);
+
+            waiting.remove();
+
+            addAIMessage(chat, "assistant", data.reply);
+
+        } catch (error) {
+            console.error("Erreur assistant IA :", error);
+
+            waiting.textContent =
+                "Impossible de contacter l'assistant. Réessaie plus tard.";
+
+            input.value = content;
+        } finally {
+            input.disabled = false;
+            send.disabled = false;
+            send.textContent = "Envoyer ➤";
+            input.focus();
+            chat.scrollTop = chat.scrollHeight;
+        }
+    });
+}
 
 aiMode.addEventListener("click", () => {
     currentMode = "ai";
 
     updateAdminVisibility();
 
-    pageTitle.textContent = "✦ Mode IA";
+    serverPanel.hidden = true;
+    dmPanel.hidden = true;
 
+    serverMode.classList.remove("selected");
+    dmMode.classList.remove("selected");
+    ticketsButton.classList.remove("selected");
+
+    pageTitle.textContent = "✦ Mode IA";
     messageForm.hidden = true;
 
-    showWelcome("Assistant Fractale");
+    renderAIAssistant();
 });
 
 // ======================================
