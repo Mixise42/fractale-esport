@@ -8,46 +8,68 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ZVP0vVJvaM4n9mbgmKh4uQ_-VlGVU35
 
 let supabaseClient = null;
 let currentUser = null;
-let currentChannel = "annonces";
+let currentRole = "member";
+let currentRank = null;
+let currentChannel = "reglement";
 let currentMode = "server";
 let authMode = "login";
-let currentRole = "member";
+let selectedTicket = null;
 
 // ======================================
 // ELEMENTS HTML
 // ======================================
 
-const authScreen = document.getElementById("authScreen");
-const app = document.getElementById("app");
-const authForm = document.getElementById("authForm");
-const loginTab = document.getElementById("loginTab");
-const registerTab = document.getElementById("registerTab");
-const authSubmit = document.getElementById("authSubmit");
-const authMessage = document.getElementById("authMessage");
-const usernameGroup = document.getElementById("usernameGroup");
-const usernameInput = document.getElementById("usernameInput");
-const emailInput = document.getElementById("emailInput");
-const passwordInput = document.getElementById("passwordInput");
+const $ = id => document.getElementById(id);
 
-const profileName = document.getElementById("profileName");
-const profileStatus = document.getElementById("profileStatus");
-const profileAvatar = document.getElementById("profileAvatar");
-const logoutButton = document.getElementById("logoutButton");
+const authScreen = $("authScreen");
+const app = $("app");
+const authForm = $("authForm");
+const loginTab = $("loginTab");
+const registerTab = $("registerTab");
+const authSubmit = $("authSubmit");
+const authMessage = $("authMessage");
+const usernameGroup = $("usernameGroup");
+const usernameInput = $("usernameInput");
+const emailInput = $("emailInput");
+const passwordInput = $("passwordInput");
 
-const messages = document.getElementById("messages");
-const messageForm = document.getElementById("messageForm");
-const messageInput = document.getElementById("messageInput");
-const pageTitle = document.getElementById("pageTitle");
+const profileName = $("profileName");
+const profileStatus = $("profileStatus");
+const profileAvatar = $("profileAvatar");
+const logoutButton = $("logoutButton");
 
-const serverMode = document.getElementById("serverMode");
-const dmMode = document.getElementById("dmMode");
-const serverPanel = document.getElementById("serverPanel");
-const dmPanel = document.getElementById("dmPanel");
-const aiMode = document.getElementById("aiMode");
-const adminButton = document.getElementById("adminButton");
+const messages = $("messages");
+const messageForm = $("messageForm");
+const messageInput = $("messageInput");
+const pageTitle = $("pageTitle");
+
+const serverMode = $("serverMode");
+const dmMode = $("dmMode");
+const serverPanel = $("serverPanel");
+const dmPanel = $("dmPanel");
+const aiMode = $("aiMode");
+const adminButton = $("adminButton");
+const ticketsButton = $("ticketsButton");
+const rankCategories = $("rankCategories");
+
+const rankLabels = {
+    "moins-de-diamant": "Moins de diamant",
+    "diamant": "Diamant",
+    "champion": "Champion",
+    "grand-champion": "Grand Champion",
+    "ssl": "SSL"
+};
+
+const rankOrder = [
+    "moins-de-diamant",
+    "diamant",
+    "champion",
+    "grand-champion",
+    "ssl"
+];
 
 // ======================================
-// AFFICHAGE ET AUTHENTIFICATION
+// AUTHENTIFICATION
 // ======================================
 
 function showAuthMessage(message, isError = false) {
@@ -88,7 +110,7 @@ function setAuthMode(mode) {
 loginTab.addEventListener("click", () => setAuthMode("login"));
 registerTab.addEventListener("click", () => setAuthMode("register"));
 
-authForm.addEventListener("submit", async (event) => {
+authForm.addEventListener("submit", async event => {
     event.preventDefault();
 
     if (!supabaseClient) {
@@ -118,13 +140,10 @@ authForm.addEventListener("submit", async (event) => {
 
             if (error) throw error;
 
-            if (data.session) {
-                showAuthMessage("Compte créé avec succès !");
-            } else {
-                showAuthMessage(
-                    "Compte créé ! Consulte ta boîte e-mail pour confirmer ton adresse."
-                );
-            }
+            showAuthMessage(data.session
+                ? "Compte créé avec succès !"
+                : "Compte créé ! Consulte ta boîte e-mail pour confirmer ton adresse."
+            );
         } else {
             const { error } = await supabaseClient.auth.signInWithPassword({
                 email,
@@ -140,7 +159,7 @@ authForm.addEventListener("submit", async (event) => {
 });
 
 // ======================================
-// PROFIL ET RÔLE
+// PROFIL, RÔLE ET RANG
 // ======================================
 
 async function loadProfile(user) {
@@ -154,10 +173,7 @@ async function loadProfile(user) {
         .eq("id", user.id)
         .maybeSingle();
 
-    if (profileError) {
-        console.error("Erreur profil :", profileError.message);
-    }
-
+    if (profileError) console.error("Erreur profil :", profileError.message);
     if (profile?.username) username = profile.username;
 
     profileName.textContent = username;
@@ -170,14 +186,75 @@ async function loadProfile(user) {
         .eq("user_id", user.id)
         .maybeSingle();
 
-    if (roleError) {
-        console.error("Erreur rôle :", roleError.message);
-        currentRole = "member";
+    currentRole = roleError ? "member" : (roleData?.role || "member");
+
+    const staff = ["founder", "cofounder", "moderator"].includes(currentRole);
+    adminButton.hidden = currentRole !== "founder";
+    $("staffCategory").hidden = !staff;
+
+    const { data: rankData, error: rankError } = await supabaseClient
+        .from("member_rank_roles")
+        .select("rank_category")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+    if (rankError) {
+        console.error("Erreur chargement rang :", rankError.message);
+        currentRank = null;
     } else {
-        currentRole = roleData?.role || "member";
+        currentRank = rankData?.rank_category || null;
     }
 
-    adminButton.hidden = currentRole !== "founder";
+    renderRankCategories();
+}
+
+// ======================================
+// CATÉGORIES DE RANG
+// ======================================
+
+function renderRankCategories() {
+    rankCategories.innerHTML = "";
+
+    if (!currentRank || !rankLabels[currentRank]) {
+        const info = document.createElement("p");
+        info.className = "muted rank-loading";
+        info.textContent = "Aucune catégorie de rang ne t'a encore été attribuée.";
+        rankCategories.appendChild(info);
+        return;
+    }
+
+    const category = document.createElement("div");
+    category.className = "category rank-category";
+
+    const toggle = document.createElement("button");
+    toggle.className = "category-toggle";
+    toggle.innerHTML = `<span>${rankLabels[currentRank]}</span><span>⌄</span>`;
+    toggle.setAttribute("aria-expanded", "true");
+
+    const content = document.createElement("div");
+    content.className = "category-content";
+
+    const rankChannels = [
+        { name: "💬 Général", slug: "general" },
+        { name: "📊 RL Tracker", slug: "rl-tracker" }
+    ];
+
+    rankChannels.forEach(item => {
+        const button = document.createElement("button");
+        button.className = "channel";
+        button.textContent = item.name;
+        button.dataset.channel = `rank-${currentRank}-${item.slug}`;
+        button.addEventListener("click", () => selectChannel(button));
+        content.appendChild(button);
+    });
+
+    toggle.addEventListener("click", () => {
+        const collapsed = category.classList.toggle("collapsed");
+        toggle.setAttribute("aria-expanded", String(!collapsed));
+    });
+
+    category.append(toggle, content);
+    rankCategories.appendChild(category);
 }
 
 // ======================================
@@ -188,7 +265,9 @@ async function handleSession(session) {
     if (!session?.user) {
         currentUser = null;
         currentRole = "member";
+        currentRank = null;
         adminButton.hidden = true;
+        $("staffCategory").hidden = true;
         showAuthScreen();
         return;
     }
@@ -232,30 +311,59 @@ async function initialiseAuth() {
 
 logoutButton.addEventListener("click", async () => {
     if (!supabaseClient) return;
-
     const { error } = await supabaseClient.auth.signOut();
+    if (error) alert("Erreur lors de la déconnexion : " + error.message);
+});
 
-    if (error) {
-        alert("Erreur lors de la déconnexion : " + error.message);
-    }
+// ======================================
+// CATÉGORIES REPLIABLES
+// ======================================
+
+document.querySelectorAll(".category-toggle").forEach(button => {
+    button.addEventListener("click", () => {
+        const category = button.closest(".category");
+        const collapsed = category.classList.toggle("collapsed");
+        button.setAttribute("aria-expanded", String(!collapsed));
+    });
 });
 
 // ======================================
 // SALONS
 // ======================================
 
-function showWelcome() {
-    messages.innerHTML = `
-        <div class="welcome">
-            <div class="welcome-icon">F</div>
-            <h1>Bienvenue sur Fractale Esport</h1>
-            <p>Une structure, une passion, un objectif.</p>
-            <p class="muted">Sélectionne un salon pour commencer à discuter.</p>
-        </div>
-    `;
+function showWelcome(title = "Bienvenue sur Fractale Esport") {
+    messages.innerHTML = "";
+
+    const welcome = document.createElement("div");
+    welcome.className = "welcome";
+
+    const icon = document.createElement("div");
+    icon.className = "welcome-icon";
+    icon.textContent = "F";
+
+    const heading = document.createElement("h1");
+    heading.textContent = title;
+
+    const description = document.createElement("p");
+    description.textContent = "Une structure, une passion, un objectif.";
+
+    const note = document.createElement("p");
+    note.className = "muted";
+    note.textContent = "La sauvegarde des messages de salons sera ajoutée dans une prochaine étape.";
+
+    welcome.append(icon, heading, description, note);
+    messages.appendChild(welcome);
 }
 
 function selectChannel(button) {
+    if (button.dataset.channel.startsWith("rank-")) {
+        const rankFromChannel = button.dataset.channel.split("-").slice(1, -1).join("-");
+        if (rankFromChannel !== currentRank) {
+            alert("Cette catégorie ne correspond pas à ton rang.");
+            return;
+        }
+    }
+
     document.querySelectorAll(".channel").forEach(channel => {
         channel.classList.remove("active");
     });
@@ -264,18 +372,24 @@ function selectChannel(button) {
     currentChannel = button.dataset.channel;
     currentMode = "server";
 
-    pageTitle.textContent = "# " + currentChannel;
+    serverPanel.hidden = false;
+    dmPanel.hidden = true;
+    serverMode.classList.add("selected");
+    dmMode.classList.remove("selected");
+    ticketsButton.classList.remove("selected");
+
+    pageTitle.textContent = button.textContent.trim();
     messageForm.hidden = false;
     messageInput.placeholder = "Écrire un message...";
-    showWelcome();
+    showWelcome("Salon " + button.textContent.trim());
 }
 
-document.querySelectorAll(".channel").forEach(button => {
+document.querySelectorAll("#serverPanel .channel").forEach(button => {
     button.addEventListener("click", () => selectChannel(button));
 });
 
 // ======================================
-// MODE SERVEUR
+// MODE SERVEUR / MESSAGES PRIVÉS
 // ======================================
 
 serverMode.addEventListener("click", () => {
@@ -284,15 +398,11 @@ serverMode.addEventListener("click", () => {
     dmPanel.hidden = true;
     serverMode.classList.add("selected");
     dmMode.classList.remove("selected");
+    ticketsButton.classList.remove("selected");
     pageTitle.textContent = "# " + currentChannel;
     messageForm.hidden = false;
-    messageInput.placeholder = "Écrire un message...";
     showWelcome();
 });
-
-// ======================================
-// MESSAGES PRIVÉS
-// ======================================
 
 dmMode.addEventListener("click", () => {
     currentMode = "dm";
@@ -300,25 +410,18 @@ dmMode.addEventListener("click", () => {
     dmPanel.hidden = false;
     dmMode.classList.add("selected");
     serverMode.classList.remove("selected");
+    ticketsButton.classList.remove("selected");
     pageTitle.textContent = "Messages privés";
     messageForm.hidden = true;
-
-    messages.innerHTML = `
-        <div class="welcome">
-            <div class="welcome-icon">✉</div>
-            <h1>Messages privés</h1>
-            <p class="muted">Tes conversations avec tes amis apparaîtront ici.</p>
-        </div>
-    `;
+    showWelcome("Messages privés");
 });
 
 // ======================================
-// ENVOI DE MESSAGES TEMPORAIRES
+// MESSAGES DE SALONS (TEMPORAIRES)
 // ======================================
 
 messageForm.addEventListener("submit", event => {
     event.preventDefault();
-
     if (!currentUser || currentMode !== "server") return;
 
     const content = messageInput.value.trim();
@@ -341,26 +444,18 @@ messageForm.addEventListener("submit", event => {
 });
 
 // ======================================
-// MODE IA (À CONNECTER)
+// MODE IA
 // ======================================
 
 aiMode.addEventListener("click", () => {
     currentMode = "ai";
     pageTitle.textContent = "✦ Mode IA";
     messageForm.hidden = true;
-
-    messages.innerHTML = `
-        <div class="welcome">
-            <div class="welcome-icon">✦</div>
-            <h1>Assistant Fractale</h1>
-            <p>Bienvenue dans ton espace IA.</p>
-            <p class="muted">La connexion à l'intelligence artificielle sera ajoutée dans une prochaine étape.</p>
-        </div>
-    `;
+    showWelcome("Assistant Fractale");
 });
 
 // ======================================
-// ADMINISTRATION
+// OUTILS ADMINISTRATION
 // ======================================
 
 function createAdminElement(tag, className, content) {
@@ -371,13 +466,12 @@ function createAdminElement(tag, className, content) {
 }
 
 function roleLabel(role) {
-    const labels = {
+    return {
         founder: "Fondateur",
         cofounder: "Cofondateur",
         moderator: "Modérateur",
         member: "Membre"
-    };
-    return labels[role] || "Membre";
+    }[role] || "Membre";
 }
 
 async function openAdministration() {
@@ -392,10 +486,8 @@ async function openAdministration() {
     messages.innerHTML = "";
 
     const heading = createAdminElement("h1", "admin-heading", "Administration");
-    const description = createAdminElement(
-        "p", "muted",
-        "Gestion des membres et des rôles de Fractale Esport."
-    );
+    const description = createAdminElement("p", "muted",
+        "Gestion des membres et des rôles de Fractale Esport.");
     const status = createAdminElement("p", "admin-status", "Chargement des membres...");
     const list = createAdminElement("div", "admin-list");
 
@@ -411,27 +503,18 @@ async function openAdministration() {
 
     status.textContent = `${data.length} membre(s) trouvé(s).`;
 
-    if (!data.length) {
-        list.appendChild(createAdminElement("p", "muted", "Aucun membre trouvé."));
-        return;
-    }
-
     data.forEach(member => {
         const card = createAdminElement("div", "admin-member");
         const info = createAdminElement("div", "admin-member-info");
         const name = createAdminElement("strong", "", member.username || "Membre");
         const role = createAdminElement("span", "admin-role", roleLabel(member.role));
-
         info.append(name, role);
 
         if (member.role_created_at) {
-            const date = new Date(member.role_created_at);
-            const dateText = createAdminElement(
-                "small",
-                "admin-date",
-                "Rôle attribué le " + date.toLocaleDateString("fr-FR")
-            );
-            info.appendChild(dateText);
+            info.appendChild(createAdminElement(
+                "small", "admin-date",
+                "Rôle attribué le " + new Date(member.role_created_at).toLocaleDateString("fr-FR")
+            ));
         }
 
         card.appendChild(info);
@@ -439,15 +522,12 @@ async function openAdministration() {
         if (member.role !== "founder" && member.user_id !== currentUser.id) {
             const select = document.createElement("select");
             select.className = "role-select";
-            select.setAttribute("aria-label", "Modifier le rôle de " + (member.username || "ce membre"));
 
-            const options = [
+            [
                 ["member", "Membre"],
                 ["moderator", "Modérateur"],
                 ["cofounder", "Cofondateur"]
-            ];
-
-            options.forEach(([value, label]) => {
+            ].forEach(([value, label]) => {
                 const option = document.createElement("option");
                 option.value = value;
                 option.textContent = label;
@@ -455,33 +535,30 @@ async function openAdministration() {
                 select.appendChild(option);
             });
 
-            const saveButton = createAdminElement("button", "role-save", "Enregistrer");
+            const save = createAdminElement("button", "role-save", "Enregistrer");
 
-            saveButton.addEventListener("click", async () => {
-                saveButton.disabled = true;
-                saveButton.textContent = "Enregistrement...";
+            save.addEventListener("click", async () => {
+                save.disabled = true;
+                save.textContent = "Enregistrement...";
 
-                const { error: updateError } = await supabaseClient.rpc(
-                    "set_site_role",
-                    {
-                        target_user: member.user_id,
-                        new_role: select.value
-                    }
-                );
+                const { error: updateError } = await supabaseClient.rpc("set_site_role", {
+                    target_user: member.user_id,
+                    new_role: select.value
+                });
 
                 if (updateError) {
                     alert("Erreur : " + updateError.message);
-                    saveButton.disabled = false;
-                    saveButton.textContent = "Enregistrer";
+                    save.disabled = false;
+                    save.textContent = "Enregistrer";
                     return;
                 }
 
-                alert("Rôle de " + (member.username || "ce membre") + " mis à jour.");
+                alert("Rôle mis à jour.");
                 await openAdministration();
             });
 
-            card.append(select, saveButton);
-        } else if (member.role === "founder") {
+            card.append(select, save);
+        } else {
             card.appendChild(createAdminElement("span", "protected-role", "Compte protégé"));
         }
 
@@ -490,6 +567,250 @@ async function openAdministration() {
 }
 
 adminButton.addEventListener("click", openAdministration);
+
+// ======================================
+// TICKETS
+// ======================================
+
+function ticketHeading(title, description) {
+    messages.innerHTML = "";
+
+    const heading = createAdminElement("h1", "admin-heading", title);
+    const text = createAdminElement("p", "muted", description);
+    messages.append(heading, text);
+}
+
+async function openTickets() {
+    currentMode = "tickets";
+    selectedTicket = null;
+    serverPanel.hidden = true;
+    dmPanel.hidden = true;
+    serverMode.classList.remove("selected");
+    dmMode.classList.remove("selected");
+    ticketsButton.classList.add("selected");
+    pageTitle.textContent = "🎫 Tickets";
+    messageForm.hidden = true;
+
+    ticketHeading("Centre de support", "Ouvre un ticket pour contacter l'équipe Fractale Esport.");
+
+    const form = createAdminElement("form", "ticket-form");
+    const title = createAdminElement("h2", "", "Créer un ticket");
+
+    const label = createAdminElement("label", "", "Sujet de ta demande");
+    label.htmlFor = "ticketSubject";
+
+    const input = document.createElement("input");
+    input.id = "ticketSubject";
+    input.maxLength = 100;
+    input.minLength = 3;
+    input.required = true;
+    input.placeholder = "Exemple : Demande d'aide";
+
+    const detailsLabel = createAdminElement("label", "", "Explique ta demande");
+    detailsLabel.htmlFor = "ticketDetails";
+
+    const details = document.createElement("textarea");
+    details.id = "ticketDetails";
+    details.maxLength = 2000;
+    details.required = true;
+    details.placeholder = "Décris ta demande...";
+
+    const submit = createAdminElement("button", "primary-button", "Ouvrir le ticket");
+    submit.type = "submit";
+
+    const status = createAdminElement("p", "muted", "");
+    form.append(title, label, input, detailsLabel, details, submit, status);
+
+    form.addEventListener("submit", async event => {
+        event.preventDefault();
+        submit.disabled = true;
+        status.textContent = "Création du ticket...";
+
+        const { data: ticket, error } = await supabaseClient
+            .from("tickets")
+            .insert({
+                user_id: currentUser.id,
+                subject: input.value.trim()
+            })
+            .select()
+            .single();
+
+        if (error) {
+            status.textContent = "Erreur : " + error.message;
+            submit.disabled = false;
+            return;
+        }
+
+        const { error: messageError } = await supabaseClient
+            .from("ticket_messages")
+            .insert({
+                ticket_id: ticket.id,
+                user_id: currentUser.id,
+                content: details.value.trim()
+            });
+
+        if (messageError) {
+            status.textContent = "Ticket créé, mais le premier message n'a pas pu être envoyé : " + messageError.message;
+            submit.disabled = false;
+            return;
+        }
+
+        await openTicket(ticket);
+    });
+
+    const listTitle = createAdminElement("h2", "", "Tes tickets");
+    const list = createAdminElement("div", "ticket-list");
+
+    messages.append(form, listTitle, list);
+
+    const { data: tickets, error } = await supabaseClient
+        .from("tickets")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        list.appendChild(createAdminElement("p", "admin-status error",
+            "Impossible de charger les tickets : " + error.message));
+        return;
+    }
+
+    if (!tickets.length) {
+        list.appendChild(createAdminElement("p", "muted", "Aucun ticket pour le moment."));
+        return;
+    }
+
+    tickets.forEach(ticket => {
+        const card = createAdminElement("div", "ticket-card");
+        const info = createAdminElement("div", "ticket-card-info");
+        const subject = createAdminElement("strong", "", ticket.subject);
+        const date = createAdminElement("small", "",
+            new Date(ticket.created_at).toLocaleString("fr-FR"));
+        const state = createAdminElement("span",
+            ticket.status === "closed" ? "ticket-status closed" : "ticket-status",
+            ticket.status === "closed" ? "Fermé" : "Ouvert");
+
+        info.append(subject, date, state);
+
+        const open = createAdminElement("button", "", "Voir le ticket");
+        open.addEventListener("click", () => openTicket(ticket));
+
+        card.append(info, open);
+        list.appendChild(card);
+    });
+}
+
+async function openTicket(ticket) {
+    selectedTicket = ticket;
+    currentMode = "ticket";
+    pageTitle.textContent = "🎫 " + ticket.subject;
+    messageForm.hidden = true;
+
+    ticketHeading(ticket.subject, "Conversation privée avec l'équipe Fractale Esport.");
+
+    const conversation = createAdminElement("div", "ticket-conversation");
+    const status = createAdminElement("p", "muted", "Chargement des messages...");
+    const messageList = createAdminElement("div", "");
+    conversation.append(status, messageList);
+
+    const actions = createAdminElement("div", "ticket-actions");
+    const back = createAdminElement("button", "", "← Retour aux tickets");
+    back.addEventListener("click", openTickets);
+    actions.appendChild(back);
+
+    if (ticket.status === "open") {
+        const close = createAdminElement("button", "", "Fermer le ticket");
+        close.addEventListener("click", async () => {
+            if (!confirm("Veux-tu vraiment fermer ce ticket ?")) return;
+
+            close.disabled = true;
+            const { error } = await supabaseClient.rpc("close_site_ticket", {
+                target_ticket: ticket.id
+            });
+
+            if (error) {
+                alert("Impossible de fermer le ticket : " + error.message);
+                close.disabled = false;
+                return;
+            }
+
+            alert("Ticket fermé.");
+            await openTickets();
+        });
+        actions.appendChild(close);
+    }
+
+    conversation.appendChild(actions);
+
+    const { data, error } = await supabaseClient
+        .from("ticket_messages")
+        .select("*")
+        .eq("ticket_id", ticket.id)
+        .order("created_at", { ascending: true });
+
+    messageList.innerHTML = "";
+
+    if (error) {
+        status.textContent = "Impossible de charger les messages : " + error.message;
+        messages.appendChild(conversation);
+        return;
+    }
+
+    status.textContent = ticket.status === "closed" ? "Ticket fermé" : "Ticket ouvert";
+
+    data.forEach(item => {
+        const block = createAdminElement("div", "ticket-message");
+        const author = createAdminElement("small", "",
+            item.user_id === currentUser.id ? "Toi" : "Membre du support");
+        const content = createAdminElement("p", "", item.content);
+        const date = createAdminElement("small", "",
+            new Date(item.created_at).toLocaleString("fr-FR"));
+        block.append(author, content, date);
+        messageList.appendChild(block);
+    });
+
+    if (ticket.status === "open") {
+        const reply = createAdminElement("form", "ticket-reply");
+        const input = document.createElement("input");
+        input.placeholder = "Écrire une réponse...";
+        input.maxLength = 2000;
+        input.required = true;
+
+        const send = createAdminElement("button", "primary-button", "Envoyer");
+        send.type = "submit";
+        reply.append(input, send);
+
+        reply.addEventListener("submit", async event => {
+            event.preventDefault();
+            const content = input.value.trim();
+            if (!content) return;
+
+            send.disabled = true;
+
+            const { error } = await supabaseClient
+                .from("ticket_messages")
+                .insert({
+                    ticket_id: ticket.id,
+                    user_id: currentUser.id,
+                    content
+                });
+
+            if (error) {
+                alert("Erreur lors de l'envoi : " + error.message);
+                send.disabled = false;
+                return;
+            }
+
+            await openTicket(ticket);
+        });
+
+        conversation.appendChild(reply);
+    }
+
+    messages.appendChild(conversation);
+    messages.scrollTop = messages.scrollHeight;
+}
+
+ticketsButton.addEventListener("click", openTickets);
 
 // ======================================
 // LANCEMENT
