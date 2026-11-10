@@ -1,3 +1,4 @@
+
 :root {
     --bg: #090b16;
     --panel: #101426;
@@ -7,9 +8,7 @@
     --line: rgba(190,180,255,.17);
 }
 
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
     margin: 0;
@@ -18,17 +17,9 @@ body {
     font-family: Arial, sans-serif;
 }
 
-button, input {
-    font: inherit;
-}
-
-button {
-    cursor: pointer;
-}
-
-[hidden] {
-    display: none !important;
-}
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+[hidden] { display: none !important; }
 
 /* CONNEXION */
 
@@ -72,9 +63,7 @@ button {
     letter-spacing: 2px;
 }
 
-.auth-card h1 span {
-    color: var(--purple);
-}
+.auth-card h1 span { color: var(--purple); }
 
 .auth-subtitle {
     color: var(--muted);
@@ -104,9 +93,7 @@ button {
     border-color: var(--purple);
 }
 
-.form-group {
-    margin-bottom: 16px;
-}
+.form-group { margin-bottom: 16px; }
 
 .form-group label {
     display: block;
@@ -125,9 +112,7 @@ button {
     outline: none;
 }
 
-.form-group input:focus {
-    border-color: var(--purple);
-}
+.form-group input:focus { border-color: var(--purple); }
 
 .auth-submit {
     width: 100%;
@@ -140,14 +125,8 @@ button {
     font-weight: bold;
 }
 
-.auth-submit:hover {
-    filter: brightness(1.1);
-}
-
-.auth-submit:disabled {
-    opacity: .6;
-    cursor: wait;
-}
+.auth-submit:hover { filter: brightness(1.1); }
+.auth-submit:disabled { opacity: .6; cursor: wait; }
 
 .auth-message {
     min-height: 20px;
@@ -158,9 +137,7 @@ button {
     line-height: 1.5;
 }
 
-.auth-message.error {
-    color: #ff8585;
-}
+.auth-message.error, .admin-status.error { color: #ff8585; }
 
 .auth-footer {
     margin-top: 25px;
@@ -254,11 +231,12 @@ button {
     text-align: left;
 }
 
-.channel:hover,
-.channel.active {
+.channel:hover, .channel.active {
     background: #24213e;
     color: white;
 }
+
+/* PROFIL */
 
 .profile {
     margin-top: auto;
@@ -281,12 +259,9 @@ button {
     font-weight: bold;
 }
 
-.profile-info {
-    min-width: 0;
-}
+.profile-info { min-width: 0; }
 
-.profile strong,
-.profile small {
+.profile strong, .profile small {
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -307,6 +282,8 @@ button {
     font-size: 20px;
 }
 
+/* CONTENU PRINCIPAL */
+
 .main {
     flex: 1;
     min-width: 0;
@@ -315,7 +292,7 @@ button {
 }
 
 .topbar {
-    height: 65px;
+    min-height: 65px;
     flex-shrink: 0;
     padding: 0 25px;
     display: flex;
@@ -372,14 +349,8 @@ button {
     font-size: 28px;
 }
 
-.welcome p {
-    color: #c0c1d0;
-}
-
-.muted {
-    color: var(--muted);
-    font-size: 13px;
-}
+.welcome p { color: #c0c1d0; }
+.muted { color: var(--muted); font-size: 13px; }
 
 .message {
     margin-bottom: 17px;
@@ -390,13 +361,8 @@ button {
     overflow-wrap: anywhere;
 }
 
-.message strong {
-    color: var(--purple);
-}
-
-.message p {
-    margin: 7px 0 0;
-}
+.message strong { color: var(--purple); }
+.message p { margin: 7px 0 0; }
 
 .message-form {
     display: flex;
@@ -417,9 +383,7 @@ button {
     color: white;
 }
 
-.message-form input:focus {
-    border-color: var(--purple);
-}
+.message-form input:focus { border-color: var(--purple); }
 
 .message-form button {
     padding: 0 20px;
@@ -428,6 +392,111 @@ button {
     background: var(--purple);
     color: #090b16;
     font-weight: bold;
+}
+
+/* ADMINISTRATION */
+
+.admin-button {
+    width: 100%;
+    padding: 12px;
+    margin: 18px 0 14px;
+    border: 1px solid rgba(146,116,255,.45);
+    border-radius: 8px;
+    background: #29234b;
+    color: #d5caff;
+    text-align: left;
+    font-weight: bold;
+}
+
+.admin-button:hover {
+    background: #393064;
+}
+
+.admin-heading {
+    margin: 5px 0 8px;
+    font-size: 27px;
+}
+
+.admin-status {
+    color: #c5b8ff;
+    font-size: 13px;
+    margin: 18px 0;
+}
+
+.admin-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.admin-member {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px;
+    background: #14192b;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+}
+
+.admin-member-info {
+    flex: 1;
+    min-width: 130px;
+}
+
+.admin-member-info strong {
+    display: block;
+    overflow-wrap: anywhere;
+}
+
+.admin-role {
+    display: inline-block;
+    margin-top: 7px;
+    padding: 4px 9px;
+    border-radius: 20px;
+    background: #29234b;
+    color: #d5caff;
+    font-size: 12px;
+}
+
+.admin-date {
+    display: block;
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.role-select {
+    min-width: 125px;
+    padding: 9px;
+    color: white;
+    background: #171b30;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+}
+
+.role-save {
+    padding: 10px 13px;
+    color: #090b16;
+    background: var(--purple);
+    border: 0;
+    border-radius: 7px;
+    font-weight: bold;
+}
+
+.role-save:disabled {
+    opacity: .6;
+    cursor: wait;
+}
+
+.protected-role {
+    color: #c5b8ff;
+    font-size: 12px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 9px;
 }
 
 /* MOBILE */
@@ -439,33 +508,13 @@ button {
         padding: 12px 8px;
     }
 
-    .brand {
-        padding-left: 4px;
-    }
-
-    .brand strong {
-        font-size: 12px;
-    }
-
-    .topbar {
-        padding: 0 12px;
-    }
-
-    .messages {
-        padding: 12px;
-    }
-
-    .message-form {
-        padding: 10px;
-    }
-
-    .message-form button {
-        padding: 0 12px;
-    }
-
-    .welcome h1 {
-        font-size: 22px;
-    }
+    .brand { padding-left: 4px; }
+    .brand strong { font-size: 12px; }
+    .topbar { padding: 0 12px; }
+    .messages { padding: 12px; }
+    .message-form { padding: 10px; }
+    .message-form button { padding: 0 12px; }
+    .welcome h1 { font-size: 22px; }
 }
 
 @media (max-width: 420px) {
@@ -474,9 +523,7 @@ button {
         min-width: 145px;
     }
 
-    .brand span {
-        letter-spacing: 2px;
-    }
+    .brand span { letter-spacing: 2px; }
 
     .switch-button {
         font-size: 11px;
@@ -488,11 +535,13 @@ button {
         padding: 9px 5px;
     }
 
-    .sidebar h3 {
-        font-size: 9px;
+    .sidebar h3 { font-size: 9px; }
+    .auth-card { padding: 24px 18px; }
+
+    .admin-member {
+        align-items: stretch;
+        flex-direction: column;
     }
 
-    .auth-card {
-        padding: 24px 18px;
-    }
+    .role-select, .role-save { width: 100%; }
 }
