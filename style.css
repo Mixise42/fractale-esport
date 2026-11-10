@@ -425,3 +425,50 @@ button { cursor: pointer; }
     .role-select, .role-save { width: 100%; }
     .ticket-reply { flex-direction: column; }
 }
+/* MENU DU BAS COMME DISCORD */
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#serverPanel,
+#dmPanel {
+    overflow-y: auto;
+    min-height: 0;
+}
+
+/* Espace réservé aux boutons du bas */
+.sidebar-bottom {
+    margin-top: auto;
+    padding-top: 12px;
+    flex-shrink: 0;
+    border-top: 1px solid var(--line);
+    background: #0d1020;
+}
+
+/* Boutons Serveur et Messages privés */
+.mode-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.mode-buttons .switch-button {
+    margin: 0;
+    padding: 12px;
+}
+
+/* Administration */
+.sidebar-bottom .admin-button {
+    margin: 0 0 10px;
+}
+
+/* Profil toujours en dessous */
+.sidebar > .profile {
+    flex-shrink: 0;
+    margin-top: 0;
+    background: #0d1020;
+}
