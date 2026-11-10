@@ -52,8 +52,6 @@
             <div><strong>FRACTALE</strong><span>ESPORT</span></div>
         </div>
 
-        <button class="switch-button selected" id="serverMode">🏠 Serveur</button>
-        <button class="switch-button" id="dmMode">✉ Messages privés</button>
         <button class="switch-button" id="ticketsButton">🎫 Tickets</button>
 
         <div id="serverPanel">
@@ -115,9 +113,25 @@
             <p class="muted">Tes conversations apparaîtront ici.</p>
         </div>
 
-        <button id="adminButton" class="admin-button" hidden>⚙ Administration</button>
+       <div class="sidebar-bottom">
 
-        <div class="profile">
+    <button id="adminButton" class="admin-button" hidden>
+        ⚙ Administration
+    </button>
+
+    <div class="mode-buttons">
+        <button class="switch-button selected" id="serverMode">
+            🏠 Serveur
+        </button>
+
+        <button class="switch-button" id="dmMode">
+            ✉ Messages privés
+        </button>
+    </div>
+
+</div>
+
+<div class="profile">
             <div class="avatar" id="profileAvatar">F</div>
             <div class="profile-info">
                 <strong id="profileName">Mon profil</strong>
