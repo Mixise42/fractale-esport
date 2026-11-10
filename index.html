@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -5,13 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fractale Esport</title>
     <link rel="stylesheet" href="style.css">
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="script.js" defer></script>
 </head>
 <body>
 
-<!-- CONNEXION / INSCRIPTION -->
 <section class="auth-screen" id="authScreen">
     <div class="auth-card">
         <div class="auth-logo">F</div>
@@ -26,41 +25,23 @@
         <form id="authForm">
             <div class="form-group" id="usernameGroup" hidden>
                 <label for="usernameInput">Pseudo</label>
-                <input
-                    id="usernameInput"
-                    type="text"
-                    placeholder="Ton pseudo"
-                    maxlength="24"
-                    autocomplete="username"
-                >
+                <input id="usernameInput" type="text" placeholder="Ton pseudo"
+                    maxlength="24" autocomplete="username">
             </div>
 
             <div class="form-group">
                 <label for="emailInput">Adresse e-mail</label>
-                <input
-                    id="emailInput"
-                    type="email"
-                    placeholder="exemple@email.com"
-                    autocomplete="email"
-                    required
-                >
+                <input id="emailInput" type="email" placeholder="exemple@email.com"
+                    autocomplete="email" required>
             </div>
 
             <div class="form-group">
                 <label for="passwordInput">Mot de passe</label>
-                <input
-                    id="passwordInput"
-                    type="password"
-                    placeholder="Ton mot de passe"
-                    minlength="6"
-                    autocomplete="current-password"
-                    required
-                >
+                <input id="passwordInput" type="password" placeholder="Ton mot de passe"
+                    minlength="6" autocomplete="current-password" required>
             </div>
 
-            <button type="submit" class="auth-submit" id="authSubmit">
-                Se connecter
-            </button>
+            <button type="submit" class="auth-submit" id="authSubmit">Se connecter</button>
         </form>
 
         <p id="authMessage" class="auth-message" role="status"></p>
@@ -68,16 +49,11 @@
     </div>
 </section>
 
-<!-- APPLICATION -->
 <div class="app" id="app" hidden>
-
     <aside class="sidebar">
         <div class="brand">
             <div class="brand-mark">F</div>
-            <div>
-                <strong>FRACTALE</strong>
-                <span>ESPORT</span>
-            </div>
+            <div><strong>FRACTALE</strong><span>ESPORT</span></div>
         </div>
 
         <button class="switch-button selected" id="serverMode">🏠 Serveur</button>
@@ -112,6 +88,8 @@
             <p class="muted">Tes conversations apparaîtront ici.</p>
         </div>
 
+        <button id="adminButton" class="admin-button" hidden>⚙ Administration</button>
+
         <div class="profile">
             <div class="avatar" id="profileAvatar">F</div>
             <div class="profile-info">
@@ -141,12 +119,8 @@
         </section>
 
         <form class="message-form" id="messageForm">
-            <input
-                id="messageInput"
-                type="text"
-                placeholder="Écrire un message..."
-                autocomplete="off"
-            >
+            <input id="messageInput" type="text"
+                placeholder="Écrire un message..." autocomplete="off">
             <button type="submit">Envoyer ➤</button>
         </form>
     </main>
