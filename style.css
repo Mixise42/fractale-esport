@@ -465,7 +465,10 @@ button { cursor: pointer; }
 .sidebar-bottom .admin-button {
     margin: 0 0 10px;
 }
-
+/* Masquer obligatoirement le bouton Administration */
+#adminButton[hidden] {
+    display: none !important;
+}
 /* Profil toujours en dessous */
 .sidebar > .profile {
     flex-shrink: 0;
