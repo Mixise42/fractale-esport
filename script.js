@@ -596,9 +596,20 @@ messageForm.addEventListener("submit", event => {
     messages.scrollTop = messages.scrollHeight;
 });
 
-// ======================================
-// MODE IA - ASSISTANT FRACTALE
-// ======================================
+
+ // ======================================
+ // MODE IA - ASSISTANT FRACTALE GRATUIT
+ // ======================================
+
+function normalizeAIText(text) {
+    return text
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9\s-]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+}
 
 function addAIMessage(container, role, content) {
     const message = document.createElement("div");
@@ -618,6 +629,74 @@ function addAIMessage(container, role, content) {
     return message;
 }
 
+// Recherche dans la base de connaissances
+async function searchAIKnowledge(question) {
+    const { data, error } = await supabaseClient
+        .from("ai_knowledge")
+        .select("id, question, answer, keywords, category")
+        .limit(200);
+
+    if (error) {
+        console.error("Erreur base IA :", error);
+        throw error;
+    }
+
+    const normalizedQuestion = normalizeAIText(question);
+    const words = normalizedQuestion
+        .split(" ")
+        .filter(word => word.length >= 3);
+
+    if (!words.length) return null;
+
+    let bestMatch = null;
+    let bestScore = 0;
+
+    for (const item of data || []) {
+        const storedQuestion = normalizeAIText(item.question);
+        const storedAnswer = normalizeAIText(item.answer);
+        const keywords = (item.keywords || [])
+            .map(normalizeAIText);
+
+        let score = 0;
+
+        for (const word of words) {
+            if (keywords.some(keyword =>
+                keyword === word ||
+                keyword.includes(word) ||
+                word.includes(keyword)
+            )) {
+                score += 3;
+            }
+
+            if (storedQuestion.includes(word)) {
+                score += 2;
+            }
+
+            if (storedAnswer.includes(word)) {
+                score += 0.5;
+            }
+        }
+
+        // Une correspondance exacte est prioritaire
+        if (normalizedQuestion === storedQuestion) {
+            score += 20;
+        }
+
+        if (score > bestScore) {
+            bestScore = score;
+            bestMatch = item;
+        }
+    }
+
+    // Évite de donner une réponse trop éloignée
+    if (bestScore < 4) {
+        return null;
+    }
+
+    return bestMatch;
+}
+
+// Affichage du chat
 function renderAIAssistant() {
     messages.innerHTML = "";
 
@@ -632,7 +711,7 @@ function renderAIAssistant() {
 
     const description = document.createElement("p");
     description.textContent =
-        "Pose tes questions sur Rocket League et Fractale Esport.";
+        "Un assistant qui enrichit ses connaissances grâce à Fractale Esport.";
 
     heading.append(title, description);
 
@@ -647,7 +726,8 @@ function renderAIAssistant() {
         const welcome = document.createElement("div");
         welcome.className = "ai-empty";
         welcome.textContent =
-            "Salut ! Je suis l'assistant de Fractale Esport. Que souhaites-tu savoir ?";
+            "Salut ! Je suis l'assistant Fractale. Pose-moi une question sur Rocket League ou notre structure !";
+
         chat.appendChild(welcome);
     }
 
@@ -675,73 +755,67 @@ function renderAIAssistant() {
 
         const content = input.value.trim();
 
-        if (!content || !currentUser || !supabaseClient) return;
-
-        if (content.length > 600) {
-            alert("Ton message est trop long.");
+        if (!content || !currentUser || !supabaseClient) {
             return;
         }
 
-        const historyForApi = [
-            ...aiHistory,
-            {
-                role: "user",
-                content
-            }
-        ].slice(-8);
-
         addAIMessage(chat, "user", content);
+
+        aiHistory.push({
+            role: "user",
+            content
+        });
+
+        aiHistory = aiHistory.slice(-20);
 
         input.value = "";
         input.disabled = true;
         send.disabled = true;
-        send.textContent = "Réponse...";
+        send.textContent = "Recherche...";
 
         const waiting = document.createElement("p");
         waiting.className = "ai-waiting";
-        waiting.textContent = "L'assistant réfléchit...";
-        chat.appendChild(waiting);
+        waiting.textContent =
+            "Je recherche dans mes connaissances...";
 
+        chat.appendChild(waiting);
         chat.scrollTop = chat.scrollHeight;
 
         try {
-            const { data, error } =
-                await supabaseClient.functions.invoke(
-                    "assistant-fractale",
-                    {
-                        body: {
-                            messages: historyForApi
-                        }
-                    }
-                );
+            const knowledge = await searchAIKnowledge(content);
 
-            if (error) throw error;
+            let reply;
 
-            if (!data?.reply) {
-                throw new Error(
-                    "L'assistant n'a pas envoyé de réponse."
-                );
+            if (knowledge) {
+                reply = knowledge.answer;
+            } else {
+                reply =
+                    "Je ne connais pas encore la réponse à cette question. " +
+                    "Mes connaissances sont encore en développement ! " +
+                    "Tu peux demander à un membre de l'équipe Fractale " +
+                    "ou ouvrir un ticket pour obtenir de l'aide.";
             }
 
-            aiHistory = [
-                ...historyForApi,
-                {
-                    role: "assistant",
-                    content: data.reply
-                }
-            ].slice(-8);
+            aiHistory.push({
+                role: "assistant",
+                content: reply
+            });
+
+            aiHistory = aiHistory.slice(-20);
 
             waiting.remove();
 
-            addAIMessage(chat, "assistant", data.reply);
+            addAIMessage(chat, "assistant", reply);
 
         } catch (error) {
-            console.error("Erreur assistant IA :", error);
+            console.error("Erreur Assistant Fractale :", error);
 
             waiting.textContent =
-                "Impossible de contacter l'assistant. Réessaie plus tard.";
+                "Impossible de consulter ma base de connaissances. Réessaie plus tard.";
 
+            aiHistory.pop();
             input.value = content;
+
         } finally {
             input.disabled = false;
             send.disabled = false;
