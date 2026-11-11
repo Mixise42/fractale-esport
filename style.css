@@ -9,17 +9,20 @@
 }
 
 * { box-sizing: border-box; }
+
 body {
     margin: 0;
     background: var(--bg);
     color: var(--text);
     font-family: Arial, sans-serif;
 }
+
 button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
 [hidden] { display: none !important; }
 
 /* CONNEXION */
+
 .auth-screen {
     min-height: 100vh;
     display: flex;
@@ -28,6 +31,7 @@ button { cursor: pointer; }
     padding: 20px;
     background: radial-gradient(circle at 50% 20%, rgba(146,116,255,.18), transparent 42%), var(--bg);
 }
+
 .auth-card {
     width: 100%;
     max-width: 420px;
@@ -37,6 +41,7 @@ button { cursor: pointer; }
     border-radius: 17px;
     box-shadow: 0 20px 70px rgba(0,0,0,.35);
 }
+
 .auth-logo {
     width: 65px;
     height: 65px;
@@ -49,10 +54,12 @@ button { cursor: pointer; }
     font-size: 40px;
     font-weight: 900;
 }
+
 .auth-card h1 { text-align: center; font-size: 23px; letter-spacing: 2px; }
 .auth-card h1 span { color: var(--purple); }
 .auth-subtitle { color: var(--muted); text-align: center; font-size: 14px; margin-bottom: 25px; }
 .auth-tabs { display: flex; gap: 8px; margin-bottom: 22px; }
+
 .auth-tab {
     flex: 1;
     padding: 12px;
@@ -61,9 +68,11 @@ button { cursor: pointer; }
     border: 1px solid var(--line);
     border-radius: 8px;
 }
+
 .auth-tab.active { color: white; background: #29234b; border-color: var(--purple); }
 .form-group { margin-bottom: 16px; }
 .form-group label { display: block; margin-bottom: 7px; font-size: 13px; color: #d5d1e8; }
+
 .form-group input {
     width: 100%;
     padding: 13px;
@@ -73,7 +82,9 @@ button { cursor: pointer; }
     border-radius: 8px;
     outline: none;
 }
+
 .form-group input:focus { border-color: var(--purple); }
+
 .auth-submit {
     width: 100%;
     padding: 14px;
@@ -84,7 +95,9 @@ button { cursor: pointer; }
     border-radius: 8px;
     font-weight: bold;
 }
+
 .auth-submit:disabled { opacity: .6; cursor: wait; }
+
 .auth-message {
     min-height: 20px;
     margin-top: 15px;
@@ -93,27 +106,33 @@ button { cursor: pointer; }
     font-size: 13px;
     line-height: 1.5;
 }
+
 .auth-message.error, .admin-status.error { color: #ff8585; }
 .auth-footer { margin-top: 25px; color: var(--muted); text-align: center; font-size: 11px; }
 
 /* APPLICATION */
+
 .app { display: flex; height: 100vh; overflow: hidden; }
+
 .sidebar {
     width: 285px;
     min-width: 250px;
+    height: 100vh;
     background: #0d1020;
     border-right: 1px solid var(--line);
     display: flex;
     flex-direction: column;
     padding: 14px 11px;
-    overflow-y: auto;
+    overflow: hidden;
 }
+
 .brand {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 8px 10px 20px;
 }
+
 .brand-mark {
     width: 42px;
     height: 42px;
@@ -125,6 +144,7 @@ button { cursor: pointer; }
     font-weight: 900;
     border-radius: 10px;
 }
+
 .brand strong { display: block; letter-spacing: 2px; }
 .brand span { color: var(--purple); font-size: 11px; letter-spacing: 4px; }
 
@@ -138,13 +158,22 @@ button { cursor: pointer; }
     color: #c4c5d2;
     text-align: left;
 }
+
 .switch-button:hover, .switch-button.selected {
     background: #29234b;
     border-color: var(--line);
     color: white;
 }
 
+#serverPanel, #dmPanel {
+    overflow-y: auto;
+    min-height: 0;
+}
+
+#dynamicCategories { padding-bottom: 5px; }
+
 .category { margin-top: 13px; }
+
 .category-toggle {
     display: flex;
     justify-content: space-between;
@@ -158,6 +187,7 @@ button { cursor: pointer; }
     font-weight: bold;
     text-align: left;
 }
+
 .category-toggle:hover { background: #171b30; }
 .category-toggle span { color: var(--muted); font-size: 17px; }
 .category-content { padding-left: 8px; }
@@ -178,7 +208,9 @@ button { cursor: pointer; }
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
 .channel:hover, .channel.active { background: #24213e; color: white; }
+
 .rank-separator {
     margin: 23px 8px 7px;
     padding-top: 13px;
@@ -188,18 +220,59 @@ button { cursor: pointer; }
     font-weight: bold;
     letter-spacing: 1.4px;
 }
+
 .rank-loading { padding: 8px; }
 .rank-category { margin-top: 4px; }
 
-/* PROFIL */
-.profile {
+/* MENU DU BAS */
+
+.sidebar-bottom {
     margin-top: auto;
+    padding-top: 12px;
+    flex-shrink: 0;
+    border-top: 1px solid var(--line);
+    background: #0d1020;
+}
+
+.mode-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.mode-buttons .switch-button {
+    margin: 0;
+    padding: 12px;
+}
+
+.admin-button {
+    width: 100%;
+    padding: 12px;
+    margin: 0 0 10px;
+    border: 1px solid rgba(146,116,255,.45);
+    border-radius: 8px;
+    background: #29234b;
+    color: #d5caff;
+    text-align: left;
+    font-weight: bold;
+}
+
+.admin-button:hover { background: #393064; }
+#adminButton[hidden] { display: none !important; }
+
+/* PROFIL */
+
+.profile {
+    flex-shrink: 0;
+    margin-top: 0;
     padding: 13px 5px 5px;
     border-top: 1px solid var(--line);
     display: flex;
     align-items: center;
     gap: 10px;
+    background: #0d1020;
 }
+
 .avatar {
     width: 38px;
     height: 38px;
@@ -211,18 +284,30 @@ button { cursor: pointer; }
     color: #090b16;
     font-weight: bold;
 }
+
 .profile-info { min-width: 0; }
+
 .profile strong, .profile small {
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
 .profile small { color: var(--muted); font-size: 11px; margin-top: 4px; }
-.profile button { margin-left: auto; background: none; border: 0; color: white; font-size: 20px; }
+
+.profile button {
+    margin-left: auto;
+    background: none;
+    border: 0;
+    color: white;
+    font-size: 20px;
+}
 
 /* CONTENU */
+
 .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
 .topbar {
     min-height: 65px;
     flex-shrink: 0;
@@ -233,6 +318,7 @@ button { cursor: pointer; }
     border-bottom: 1px solid var(--line);
     background: #0d1020;
 }
+
 .topbar button {
     background: #29234b;
     color: #c5b8ff;
@@ -240,6 +326,7 @@ button { cursor: pointer; }
     padding: 10px 15px;
     border-radius: 7px;
 }
+
 .online-dot {
     display: inline-block;
     width: 9px;
@@ -248,8 +335,10 @@ button { cursor: pointer; }
     background: #55d995;
     border-radius: 50%;
 }
+
 .messages { flex: 1; padding: 25px; overflow-y: auto; }
 .welcome { margin: auto; text-align: center; padding: 70px 15px; }
+
 .welcome-icon {
     margin: auto;
     width: 75px;
@@ -262,9 +351,11 @@ button { cursor: pointer; }
     font-size: 42px;
     font-weight: bold;
 }
+
 .welcome h1 { margin-top: 25px; font-size: 28px; }
 .welcome p { color: #c0c1d0; }
 .muted { color: var(--muted); font-size: 13px; }
+
 .message {
     margin-bottom: 17px;
     padding: 13px;
@@ -273,8 +364,10 @@ button { cursor: pointer; }
     border-radius: 9px;
     overflow-wrap: anywhere;
 }
+
 .message strong { color: var(--purple); }
 .message p { margin: 7px 0 0; }
+
 .message-form {
     display: flex;
     gap: 10px;
@@ -282,6 +375,7 @@ button { cursor: pointer; }
     border-top: 1px solid var(--line);
     background: #0d1020;
 }
+
 .message-form input {
     flex: 1;
     min-width: 0;
@@ -292,7 +386,9 @@ button { cursor: pointer; }
     background: #171b30;
     color: white;
 }
+
 .message-form input:focus { border-color: var(--purple); }
+
 .message-form button, .primary-button {
     padding: 11px 18px;
     border: 0;
@@ -303,21 +399,17 @@ button { cursor: pointer; }
 }
 
 /* ADMINISTRATION */
-.admin-button {
-    width: 100%;
-    padding: 12px;
-    margin: 18px 0 14px;
-    border: 1px solid rgba(146,116,255,.45);
-    border-radius: 8px;
-    background: #29234b;
-    color: #d5caff;
-    text-align: left;
-    font-weight: bold;
-}
-.admin-button:hover { background: #393064; }
+
 .admin-heading { margin: 5px 0 8px; font-size: 27px; }
 .admin-status { color: #c5b8ff; font-size: 13px; margin: 18px 0; }
-.admin-list, .ticket-list { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+
+.admin-list, .ticket-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
 .admin-member, .ticket-card {
     display: flex;
     align-items: center;
@@ -328,8 +420,10 @@ button { cursor: pointer; }
     border: 1px solid var(--line);
     border-radius: 10px;
 }
+
 .admin-member-info { flex: 1; min-width: 130px; }
 .admin-member-info strong { display: block; overflow-wrap: anywhere; }
+
 .admin-role {
     display: inline-block;
     margin-top: 7px;
@@ -339,7 +433,9 @@ button { cursor: pointer; }
     color: #d5caff;
     font-size: 12px;
 }
+
 .admin-date { display: block; margin-top: 6px; color: var(--muted); font-size: 11px; }
+
 .role-select {
     min-width: 125px;
     padding: 9px;
@@ -348,6 +444,7 @@ button { cursor: pointer; }
     border: 1px solid var(--line);
     border-radius: 7px;
 }
+
 .role-save {
     padding: 10px 13px;
     color: #090b16;
@@ -356,6 +453,7 @@ button { cursor: pointer; }
     border-radius: 7px;
     font-weight: bold;
 }
+
 .protected-role {
     color: #c5b8ff;
     font-size: 12px;
@@ -364,121 +462,193 @@ button { cursor: pointer; }
     padding: 9px;
 }
 
-/* TICKETS */
-.ticket-form, .ticket-conversation {
-    max-width: 850px;
-    margin: 20px auto;
-    padding: 20px;
-    background: #14192b;
-    border: 1px solid var(--line);
-    border-radius: 12px;
+/* NAVIGATION ADMIN */
+
+.admin-navigation,
+.knowledge-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 15px 0;
 }
-.ticket-form label { display: block; margin: 12px 0 7px; color: #d5d1e8; font-size: 13px; }
-.ticket-form input, .ticket-form textarea {
-    width: 100%;
-    padding: 12px;
-    color: white;
-    background: #171b30;
+
+.admin-navigation button,
+.knowledge-actions button {
+    padding: 10px 14px;
     border: 1px solid var(--line);
     border-radius: 8px;
-    outline: none;
+    background: #29234b;
+    color: white;
 }
-.ticket-form textarea { min-height: 100px; resize: vertical; }
-.ticket-form button { margin-top: 14px; }
-.ticket-card { justify-content: space-between; }
-.ticket-card-info { flex: 1; min-width: 150px; }
-.ticket-card-info small { display: block; color: var(--muted); margin-top: 6px; }
-.ticket-card button, .ticket-actions button {
-    padding: 9px 12px;
+
+.admin-navigation button:hover,
+.knowledge-actions button:hover {
+    border-color: var(--purple);
+}
+
+/* GESTION DES SALONS */
+
+.channel-management,
+.category-management {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.management-form,
+.category-admin-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 17px;
+    margin: 12px 0;
+}
+
+.management-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.management-form input,
+.management-form select {
+    width: 100%;
+    padding: 12px;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.management-form label {
+    font-size: 13px;
+    font-weight: bold;
+    color: #d5d1e8;
+}
+
+.management-form button {
+    padding: 11px 15px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--purple);
+    color: #090b16;
+    font-weight: bold;
+}
+
+.staff-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.staff-checkbox input {
+    width: auto;
+    accent-color: var(--purple);
+}
+
+.category-admin-card h3 { margin: 0 0 8px; }
+.category-admin-card > p { color: var(--muted); font-size: 12px; }
+
+.category-admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.category-admin-actions,
+.channel-admin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.category-admin-actions button,
+.channel-admin-actions button {
+    padding: 8px 10px;
     border: 1px solid var(--line);
     border-radius: 7px;
     background: #29234b;
     color: white;
 }
-.ticket-status { color: #75dda5; font-size: 12px; }
-.ticket-status.closed { color: #ff9b9b; }
-.ticket-message { margin: 12px 0; padding: 12px; background: #1b2035; border-radius: 8px; }
-.ticket-message small { color: var(--purple); }
-.ticket-message p { margin: 7px 0 0; overflow-wrap: anywhere; }
-.ticket-actions { display: flex; gap: 8px; margin-top: 15px; }
-.ticket-reply { display: flex; gap: 8px; margin-top: 15px; }
-.ticket-reply input { flex: 1; min-width: 0; padding: 12px; color: white; background: #171b30; border: 1px solid var(--line); border-radius: 8px; }
 
-/* MOBILE */
-@media (max-width: 650px) {
-    .sidebar { width: 220px; min-width: 200px; padding: 12px 8px; }
-    .brand { padding-left: 4px; }
-    .brand strong { font-size: 12px; }
-    .topbar { padding: 0 12px; }
-    .messages { padding: 12px; }
-    .message-form { padding: 10px; }
-    .message-form button { padding: 0 12px; }
-    .welcome h1 { font-size: 22px; }
+.category-admin-actions button:hover,
+.channel-admin-actions button:hover {
+    border-color: var(--purple);
 }
-@media (max-width: 420px) {
-    .sidebar { width: 175px; min-width: 175px; }
-    .brand span { letter-spacing: 2px; }
-    .switch-button, .channel { font-size: 11px; padding: 9px 6px; }
-    .category-toggle { font-size: 12px; }
-    .auth-card { padding: 24px 18px; }
-    .admin-member { align-items: stretch; flex-direction: column; }
-    .role-select, .role-save { width: 100%; }
-    .ticket-reply { flex-direction: column; }
-}
-/* MENU DU BAS COMME DISCORD */
 
-.sidebar {
+.channel-admin-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 11px;
+    margin-top: 8px;
+    background: #171b30;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.channel-admin-row span {
+    overflow-wrap: anywhere;
+    flex: 1;
+}
+
+/* CONNAISSANCES IA */
+
+.knowledge-form,
+.knowledge-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px;
+    margin: 15px 0;
+}
+
+.knowledge-form {
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
+    gap: 10px;
 }
 
-#serverPanel,
-#dmPanel {
-    overflow-y: auto;
-    min-height: 0;
-}
-
-/* Espace réservé aux boutons du bas */
-.sidebar-bottom {
-    margin-top: auto;
-    padding-top: 12px;
-    flex-shrink: 0;
-    border-top: 1px solid var(--line);
-    background: #0d1020;
-}
-
-/* Boutons Serveur et Messages privés */
-.mode-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.mode-buttons .switch-button {
-    margin: 0;
+.knowledge-form input,
+.knowledge-form textarea,
+.knowledge-form select {
+    width: 100%;
     padding: 12px;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font: inherit;
 }
 
-/* Administration */
-.sidebar-bottom .admin-button {
-    margin: 0 0 10px;
-}
-/* Masquer obligatoirement le bouton Administration */
-#adminButton[hidden] {
-    display: none !important;
-}
-/* Profil toujours en dessous */
-.sidebar > .profile {
-    flex-shrink: 0;
-    margin-top: 0;
-    background: #0d1020;
+.knowledge-form textarea { resize: vertical; }
+.knowledge-form label { font-weight: 600; margin-top: 8px; }
+.knowledge-card h3 { margin-top: 0; }
+
+.knowledge-card p {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 
-/* ======================================
-   ASSISTANT IA FRACTALE
-====================================== */
+.knowledge-category {
+    display: block;
+    color: var(--purple);
+    margin: 8px 0;
+}
+
+.knowledge-form button:disabled,
+.ai-send:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+/* ASSISTANT IA */
 
 .ai-panel {
     width: 100%;
@@ -490,18 +660,9 @@ button { cursor: pointer; }
     min-height: 100%;
 }
 
-.ai-heading {
-    padding: 15px 0;
-}
-
-.ai-heading h1 {
-    color: var(--purple);
-    font-size: 27px;
-}
-
-.ai-heading p {
-    color: var(--muted);
-}
+.ai-heading { padding: 15px 0; }
+.ai-heading h1 { color: var(--purple); font-size: 27px; }
+.ai-heading p { color: var(--muted); }
 
 .ai-chat {
     display: flex;
@@ -527,19 +688,9 @@ button { cursor: pointer; }
     overflow-wrap: anywhere;
 }
 
-.ai-message.user {
-    align-self: flex-end;
-    background: #29234b;
-}
-
-.ai-message.assistant {
-    align-self: flex-start;
-    background: #14192b;
-}
-
-.ai-message strong {
-    color: var(--purple);
-}
+.ai-message.user { align-self: flex-end; background: #29234b; }
+.ai-message.assistant { align-self: flex-start; background: #14192b; }
+.ai-message strong { color: var(--purple); }
 
 .ai-message p {
     margin-bottom: 0;
@@ -547,10 +698,7 @@ button { cursor: pointer; }
     white-space: pre-wrap;
 }
 
-.ai-waiting {
-    color: var(--muted);
-    font-size: 13px;
-}
+.ai-waiting { color: var(--muted); font-size: 13px; }
 
 .ai-form {
     display: flex;
@@ -581,88 +729,87 @@ button { cursor: pointer; }
     font-weight: bold;
 }
 
-/* ======================================
-   GESTION DES CONNAISSANCES IA
-====================================== */
+/* TICKETS */
 
-.admin-navigation,
-.knowledge-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin: 15px 0;
-}
-
-.knowledge-form,
-.knowledge-card {
-    background: var(--panel);
+.ticket-form, .ticket-conversation {
+    max-width: 850px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #14192b;
     border: 1px solid var(--line);
     border-radius: 12px;
-    padding: 16px;
-    margin: 15px 0;
 }
 
-.knowledge-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+.ticket-form label {
+    display: block;
+    margin: 12px 0 7px;
+    color: #d5d1e8;
+    font-size: 13px;
 }
 
-.knowledge-form input,
-.knowledge-form textarea,
-.knowledge-form select {
+.ticket-form input, .ticket-form textarea {
     width: 100%;
     padding: 12px;
-    color: var(--text);
-    background: var(--bg);
+    color: white;
+    background: #171b30;
     border: 1px solid var(--line);
     border-radius: 8px;
-    font: inherit;
+    outline: none;
 }
 
-.knowledge-form textarea {
-    resize: vertical;
+.ticket-form textarea { min-height: 100px; resize: vertical; }
+.ticket-form button { margin-top: 14px; }
+.ticket-card { justify-content: space-between; }
+.ticket-card-info { flex: 1; min-width: 150px; }
+.ticket-card-info small { display: block; color: var(--muted); margin-top: 6px; }
+
+.ticket-card button, .ticket-actions button {
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: #29234b;
+    color: white;
 }
 
-.knowledge-form label {
-    font-weight: 600;
-    margin-top: 8px;
-}
+.ticket-status { color: #75dda5; font-size: 12px; }
+.ticket-status.closed { color: #ff9b9b; }
+.ticket-message { margin: 12px 0; padding: 12px; background: #1b2035; border-radius: 8px; }
+.ticket-message small { color: var(--purple); }
+.ticket-message p { margin: 7px 0 0; overflow-wrap: anywhere; }
+.ticket-actions { display: flex; gap: 8px; margin-top: 15px; }
 
-.knowledge-card h3 {
-    margin-top: 0;
-}
+.ticket-reply { display: flex; gap: 8px; margin-top: 15px; }
 
-.knowledge-card p {
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-}
-
-.knowledge-category {
-    display: block;
-    color: var(--purple);
-    margin: 8px 0;
-}
-
-.knowledge-actions button,
-.admin-navigation button {
-    padding: 10px 14px;
+.ticket-reply input {
+    flex: 1;
+    min-width: 0;
+    padding: 12px;
+    color: white;
+    background: #171b30;
     border: 1px solid var(--line);
     border-radius: 8px;
-    cursor: pointer;
 }
 
-.knowledge-actions button:hover,
-.admin-navigation button:hover {
-    border-color: var(--purple);
+/* MOBILE */
+
+@media (max-width: 650px) {
+    .sidebar { width: 220px; min-width: 200px; padding: 12px 8px; }
+    .brand { padding-left: 4px; }
+    .brand strong { font-size: 12px; }
+    .topbar { padding: 0 12px; }
+    .messages { padding: 12px; }
+    .message-form { padding: 10px; }
+    .message-form button { padding: 0 12px; }
+    .welcome h1 { font-size: 22px; }
 }
 
-.knowledge-form button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.ai-send:disabled {
-    opacity: .6;
-    cursor: wait;
+@media (max-width: 420px) {
+    .sidebar { width: 175px; min-width: 175px; }
+    .brand span { letter-spacing: 2px; }
+    .switch-button, .channel { font-size: 11px; padding: 9px 6px; }
+    .category-toggle { font-size: 12px; }
+    .auth-card { padding: 24px 18px; }
+    .admin-member { align-items: stretch; flex-direction: column; }
+    .role-select, .role-save { width: 100%; }
+    .ticket-reply { flex-direction: column; }
 }
