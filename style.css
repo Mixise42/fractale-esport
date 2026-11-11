@@ -475,3 +475,113 @@ button { cursor: pointer; }
     margin-top: 0;
     background: #0d1020;
 }
+
+/* ======================================
+   ASSISTANT IA FRACTALE
+====================================== */
+
+.ai-panel {
+    width: 100%;
+    max-width: 950px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-height: 100%;
+}
+
+.ai-heading {
+    padding: 15px 0;
+}
+
+.ai-heading h1 {
+    color: var(--purple);
+    font-size: 27px;
+}
+
+.ai-heading p {
+    color: var(--muted);
+}
+
+.ai-chat {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1;
+    min-height: 250px;
+}
+
+.ai-empty {
+    padding: 20px;
+    background: #14192b;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    color: var(--muted);
+}
+
+.ai-message {
+    max-width: 85%;
+    padding: 13px 16px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow-wrap: anywhere;
+}
+
+.ai-message.user {
+    align-self: flex-end;
+    background: #29234b;
+}
+
+.ai-message.assistant {
+    align-self: flex-start;
+    background: #14192b;
+}
+
+.ai-message strong {
+    color: var(--purple);
+}
+
+.ai-message p {
+    margin-bottom: 0;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+.ai-waiting {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.ai-form {
+    display: flex;
+    gap: 10px;
+    padding: 12px;
+    background: #0d1020;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.ai-input {
+    flex: 1;
+    min-width: 0;
+    resize: vertical;
+    padding: 12px;
+    color: white;
+    background: #171b30;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.ai-send {
+    padding: 12px 18px;
+    color: #090b16;
+    background: var(--purple);
+    border: 0;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.ai-send:disabled {
+    opacity: .6;
+    cursor: wait;
+}
