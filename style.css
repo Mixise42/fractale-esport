@@ -581,6 +581,87 @@ button { cursor: pointer; }
     font-weight: bold;
 }
 
+/* ======================================
+   GESTION DES CONNAISSANCES IA
+====================================== */
+
+.admin-navigation,
+.knowledge-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.knowledge-form,
+.knowledge-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px;
+    margin: 15px 0;
+}
+
+.knowledge-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.knowledge-form input,
+.knowledge-form textarea,
+.knowledge-form select {
+    width: 100%;
+    padding: 12px;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font: inherit;
+}
+
+.knowledge-form textarea {
+    resize: vertical;
+}
+
+.knowledge-form label {
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+.knowledge-card h3 {
+    margin-top: 0;
+}
+
+.knowledge-card p {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.knowledge-category {
+    display: block;
+    color: var(--purple);
+    margin: 8px 0;
+}
+
+.knowledge-actions button,
+.admin-navigation button {
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.knowledge-actions button:hover,
+.admin-navigation button:hover {
+    border-color: var(--purple);
+}
+
+.knowledge-form button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .ai-send:disabled {
     opacity: .6;
     cursor: wait;
