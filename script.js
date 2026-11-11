@@ -883,32 +883,64 @@ function roleLabel(role) {
     }[role] || "Membre";
 }
 
+// ======================================
+// ADMINISTRATION
+// ======================================
+
+function isStaff() {
+    return [
+        "founder",
+        "cofounder",
+        "moderator"
+    ].includes(currentRole);
+}
+
 async function openAdministration() {
-    if (currentRole !== "founder") {
-        alert("Accès réservé au Fondateur.");
+    if (!isStaff()) {
+        alert("Accès réservé à l'équipe Fractale.");
         return;
     }
 
     currentMode = "admin";
-
     updateAdminVisibility();
 
     pageTitle.textContent = "⚙ Administration";
-
     messageForm.hidden = true;
     messages.innerHTML = "";
 
     const heading = createAdminElement(
         "h1",
         "admin-heading",
-        "Administration"
+        "Administration Fractale"
     );
 
     const description = createAdminElement(
         "p",
         "muted",
-        "Gestion des membres et des rôles de Fractale Esport."
+        "Gestion des membres et des connaissances de l'assistant."
     );
+
+    const navigation = createAdminElement(
+        "div",
+        "admin-navigation"
+    );
+
+    const membersButton = createAdminElement(
+        "button",
+        "primary-button",
+        "👥 Gestion des membres"
+    );
+
+    const knowledgeButton = createAdminElement(
+        "button",
+        "primary-button",
+        "✦ Gestion des connaissances IA"
+    );
+
+    membersButton.addEventListener("click", openAdministration);
+    knowledgeButton.addEventListener("click", openKnowledgeManagement);
+
+    navigation.append(membersButton, knowledgeButton);
 
     const status = createAdminElement(
         "p",
@@ -918,7 +950,13 @@ async function openAdministration() {
 
     const list = createAdminElement("div", "admin-list");
 
-    messages.append(heading, description, status, list);
+    messages.append(
+        heading,
+        description,
+        navigation,
+        status,
+        list
+    );
 
     const { data, error } =
         await supabaseClient.rpc("get_site_members");
@@ -928,14 +966,13 @@ async function openAdministration() {
             "Impossible de charger les membres : " + error.message;
 
         status.classList.add("error");
-
         return;
     }
 
     status.textContent =
         `${data.length} membre(s) trouvé(s).`;
 
-    data.forEach(member => {
+    (data || []).forEach(member => {
         const card = createAdminElement("div", "admin-member");
 
         const info = createAdminElement(
@@ -1013,12 +1050,10 @@ async function openAdministration() {
 
                     save.disabled = false;
                     save.textContent = "Enregistrer";
-
                     return;
                 }
 
                 alert("Rôle mis à jour.");
-
                 await openAdministration();
             });
 
