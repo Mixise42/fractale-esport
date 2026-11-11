@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -27,16 +28,19 @@
                 <input id="usernameInput" type="text" maxlength="24"
                     placeholder="Ton pseudo" autocomplete="username">
             </div>
+
             <div class="form-group">
                 <label for="emailInput">Adresse e-mail</label>
                 <input id="emailInput" type="email" required
                     placeholder="exemple@email.com" autocomplete="email">
             </div>
+
             <div class="form-group">
                 <label for="passwordInput">Mot de passe</label>
                 <input id="passwordInput" type="password" minlength="6"
                     required placeholder="Ton mot de passe">
             </div>
+
             <button type="submit" class="auth-submit" id="authSubmit">Se connecter</button>
         </form>
 
@@ -47,6 +51,7 @@
 
 <div class="app" id="app" hidden>
     <aside class="sidebar">
+
         <div class="brand">
             <div class="brand-mark">F</div>
             <div><strong>FRACTALE</strong><span>ESPORT</span></div>
@@ -55,54 +60,12 @@
         <button class="switch-button" id="ticketsButton">🎫 Tickets</button>
 
         <div id="serverPanel">
-            <div class="category">
-                <button class="category-toggle" aria-expanded="true">🏠 Accueil <span>⌄</span></button>
-                <div class="category-content">
-                    <button class="channel active" data-channel="reglement">📜 Règlement</button>
-                    <button class="channel" data-channel="partenariat">🤝 Partenariat</button>
-                    <button class="channel" data-channel="membres">🔊 Membres</button>
-                </div>
-            </div>
-
-            <div class="category">
-                <button class="category-toggle" aria-expanded="true">📁 Information <span>⌄</span></button>
-                <div class="category-content">
-                    <button class="channel" data-channel="annonces">📢 Annonces</button>
-                    <button class="channel" data-channel="recrutement">📋 Recrutement</button>
-                    <button class="channel" data-channel="sondage">📊 Sondage</button>
-                    <button class="channel" data-channel="evenement">🎉 Événement</button>
-                    <button class="channel" data-channel="effectif-officiel">👥 Effectif-officiel</button>
-                    <button class="channel" data-channel="resultat-scrim">🏆 Résultat-scrim</button>
-                    <button class="channel" data-channel="tournois">🏟️ Tournois</button>
-                    <button class="channel" data-channel="roles">🎭 Rôles</button>
-                </div>
-            </div>
-
-            <div class="category">
-                <button class="category-toggle" aria-expanded="true">⚙ Communauté <span>⌄</span></button>
-                <div class="category-content">
-                    <button class="channel" data-channel="chat">💬 Chat</button>
-                    <button class="channel" data-channel="images">🖼️ Images</button>
-                    <button class="channel" data-channel="clips">🎬 Clips</button>
-                    <button class="channel" data-channel="preset">🚗 Preset</button>
-                    <button class="channel" data-channel="settings">⚙️ Settings</button>
-                    <button class="channel" data-channel="niveaux">📈 Niveaux</button>
-                    <button class="channel" data-channel="compteur">🔢 Compteur</button>
-                    <button class="channel" data-channel="reputations">🌟 Réputations</button>
-                    <button class="channel" data-channel="suggestion">💡 Suggestions</button>
-                </div>
-            </div>
-
-            <div class="category" id="staffCategory" hidden>
-                <button class="category-toggle" aria-expanded="true">🛡️ Staff <span>⌄</span></button>
-                <div class="category-content">
-                    <button class="channel" data-channel="moderation">🛡️ Modération</button>
-                    <button class="channel" data-channel="signalements">🚨 Signalements</button>
-                    <button class="channel" data-channel="staff-chat">💬 Staff-chat</button>
-                </div>
+            <div id="dynamicCategories">
+                <p class="muted">Chargement des catégories...</p>
             </div>
 
             <div class="rank-separator">CATÉGORIES DE RANG</div>
+
             <div id="rankCategories">
                 <p class="muted rank-loading">Chargement de ton rang...</p>
             </div>
@@ -113,40 +76,46 @@
             <p class="muted">Tes conversations apparaîtront ici.</p>
         </div>
 
-       <div class="sidebar-bottom">
+        <div class="sidebar-bottom">
 
-    <button id="adminButton" class="admin-button" hidden>
-        ⚙ Administration
-    </button>
+            <button id="adminButton" class="admin-button" hidden>
+                ⚙ Administration
+            </button>
 
-    <div class="mode-buttons">
-        <button class="switch-button selected" id="serverMode">
-            🏠 Serveur
-        </button>
+            <div class="mode-buttons">
+                <button class="switch-button selected" id="serverMode">
+                    🏠 Serveur
+                </button>
 
-        <button class="switch-button" id="dmMode">
-            ✉ Messages privés
-        </button>
-    </div>
+                <button class="switch-button" id="dmMode">
+                    ✉ Messages privés
+                </button>
+            </div>
 
-</div>
+        </div>
 
-<div class="profile">
+        <div class="profile">
             <div class="avatar" id="profileAvatar">F</div>
+
             <div class="profile-info">
                 <strong id="profileName">Mon profil</strong>
                 <small id="profileStatus">Connecté</small>
             </div>
-            <button id="logoutButton" title="Se déconnecter" aria-label="Se déconnecter">↪</button>
+
+            <button id="logoutButton" title="Se déconnecter"
+                aria-label="Se déconnecter">↪</button>
         </div>
+
     </aside>
 
     <main class="main">
+
         <header class="topbar">
             <div>
                 <span class="online-dot"></span>
                 <strong id="pageTitle"># règlement</strong>
             </div>
+
             <button id="aiMode">✦ Mode IA</button>
         </header>
 
@@ -164,6 +133,7 @@
                 placeholder="Écrire un message..." autocomplete="off">
             <button type="submit">Envoyer ➤</button>
         </form>
+
     </main>
 </div>
 
