@@ -352,7 +352,19 @@ async function handleSession(session) {
         currentRank = null;
         currentMode = "server";
 
-        updateAdminVisibility();
+        function updateAdminVisibility() {
+    if (!adminButton) return;
+
+    const staff = [
+        "founder",
+        "cofounder",
+        "moderator"
+    ].includes(currentRole);
+
+    adminButton.hidden =
+        !staff ||
+        !["server", "admin"].includes(currentMode);
+}
 
         $("staffCategory").hidden = true;
 
