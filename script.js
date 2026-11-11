@@ -1073,6 +1073,415 @@ async function openAdministration() {
 }
 
 adminButton.addEventListener("click", openAdministration);
+// ======================================
+// GESTION DES CONNAISSANCES IA
+// ======================================
+
+let editingKnowledgeId = null;
+
+async function openKnowledgeManagement() {
+    if (!isStaff()) {
+        alert("Accès réservé à l'équipe Fractale.");
+        return;
+    }
+
+    currentMode = "admin";
+    updateAdminVisibility();
+
+    pageTitle.textContent = "✦ Gestion des connaissances IA";
+    messageForm.hidden = true;
+    messages.innerHTML = "";
+
+    const heading = createAdminElement(
+        "h1",
+        "admin-heading",
+        "✦ Gestion des connaissances IA"
+    );
+
+    const description = createAdminElement(
+        "p",
+        "muted",
+        "Ajoute des informations pour améliorer les réponses de l'assistant."
+    );
+
+    const backButton = createAdminElement(
+        "button",
+        "primary-button",
+        "← Retour à l'administration"
+    );
+
+    backButton.addEventListener("click", openAdministration);
+
+    const form = createAdminElement(
+        "form",
+        "knowledge-form"
+    );
+
+    const formTitle = createAdminElement(
+        "h2",
+        "",
+        "Ajouter une connaissance"
+    );
+
+    const questionLabel = createAdminElement(
+        "label",
+        "",
+        "Question"
+    );
+
+    const questionInput = document.createElement("input");
+    questionInput.type = "text";
+    questionInput.placeholder = "Exemple : Qu'est-ce que Fractale Esport ?";
+    questionInput.maxLength = 300;
+    questionInput.minLength = 3;
+    questionInput.required = true;
+
+    const answerLabel = createAdminElement(
+        "label",
+        "",
+        "Réponse"
+    );
+
+    const answerInput = document.createElement("textarea");
+    answerInput.placeholder = "Écris la réponse que l'assistant devra donner...";
+    answerInput.maxLength = 3000;
+    answerInput.required = true;
+    answerInput.rows = 5;
+
+    const categoryLabel = createAdminElement(
+        "label",
+        "",
+        "Catégorie"
+    );
+
+    const categoryInput = document.createElement("select");
+
+    [
+        ["general", "Général"],
+        ["fractale", "Fractale Esport"],
+        ["rocket-league", "Rocket League"],
+        ["reglement", "Règlement"],
+        ["support", "Support"],
+        ["tournois", "Tournois"]
+    ].forEach(([value, label]) => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = label;
+        categoryInput.appendChild(option);
+    });
+
+    const keywordsLabel = createAdminElement(
+        "label",
+        "",
+        "Mots-clés (séparés par des virgules)"
+    );
+
+    const keywordsInput = document.createElement("input");
+    keywordsInput.type = "text";
+    keywordsInput.placeholder =
+        "Exemple : fractale, équipe, communauté";
+
+    const status = createAdminElement(
+        "p",
+        "admin-status",
+        ""
+    );
+
+    const submit = createAdminElement(
+        "button",
+        "primary-button",
+        "Ajouter la connaissance"
+    );
+
+    submit.type = "submit";
+
+    const cancel = createAdminElement(
+        "button",
+        "",
+        "Annuler la modification"
+    );
+
+    cancel.type = "button";
+    cancel.hidden = true;
+
+    form.append(
+        formTitle,
+        questionLabel,
+        questionInput,
+        answerLabel,
+        answerInput,
+        categoryLabel,
+        categoryInput,
+        keywordsLabel,
+        keywordsInput,
+        submit,
+        cancel,
+        status
+    );
+
+    const listTitle = createAdminElement(
+        "h2",
+        "",
+        "Connaissances enregistrées"
+    );
+
+    const listStatus = createAdminElement(
+        "p",
+        "muted",
+        "Chargement des connaissances..."
+    );
+
+    const list = createAdminElement(
+        "div",
+        "knowledge-list"
+    );
+
+    messages.append(
+        heading,
+        description,
+        backButton,
+        form,
+        listTitle,
+        listStatus,
+        list
+    );
+
+    function resetKnowledgeForm() {
+        editingKnowledgeId = null;
+        form.reset();
+
+        formTitle.textContent = "Ajouter une connaissance";
+        submit.textContent = "Ajouter la connaissance";
+        cancel.hidden = true;
+        status.textContent = "";
+    }
+
+    cancel.addEventListener("click", resetKnowledgeForm);
+
+    async function loadKnowledgeList() {
+        list.innerHTML = "";
+        listStatus.textContent = "Chargement des connaissances...";
+
+        const { data, error } = await supabaseClient
+            .from("ai_knowledge")
+            .select("id, question, answer, category, keywords, created_at")
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            listStatus.textContent =
+                "Impossible de charger les connaissances : " +
+                error.message;
+            return;
+        }
+
+        listStatus.textContent =
+            `${data.length} connaissance(s) enregistrée(s).`;
+
+        if (!data.length) {
+            list.appendChild(
+                createAdminElement(
+                    "p",
+                    "muted",
+                    "Aucune connaissance enregistrée."
+                )
+            );
+            return;
+        }
+
+        data.forEach(item => {
+            const card = createAdminElement(
+                "div",
+                "knowledge-card"
+            );
+
+            const question = createAdminElement(
+                "h3",
+                "",
+                item.question
+            );
+
+            const category = createAdminElement(
+                "small",
+                "knowledge-category",
+                "Catégorie : " + item.category
+            );
+
+            const answer = createAdminElement(
+                "p",
+                "",
+                item.answer
+            );
+
+            const keywords = createAdminElement(
+                "small",
+                "muted",
+                "Mots-clés : " +
+                ((item.keywords || []).join(", ") || "Aucun")
+            );
+
+            const actions = createAdminElement(
+                "div",
+                "knowledge-actions"
+            );
+
+            const edit = createAdminElement(
+                "button",
+                "",
+                "✏️ Modifier"
+            );
+
+            edit.addEventListener("click", () => {
+                editingKnowledgeId = item.id;
+
+                questionInput.value = item.question;
+                answerInput.value = item.answer;
+                categoryInput.value = item.category || "general";
+                keywordsInput.value =
+                    (item.keywords || []).join(", ");
+
+                formTitle.textContent = "Modifier une connaissance";
+                submit.textContent = "Enregistrer les modifications";
+                cancel.hidden = false;
+
+                status.textContent =
+                    "Modification de : " + item.question;
+
+                form.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+            });
+
+            const remove = createAdminElement(
+                "button",
+                "",
+                "🗑️ Supprimer"
+            );
+
+            remove.addEventListener("click", async () => {
+                if (!confirm(
+                    "Veux-tu vraiment supprimer cette connaissance ?"
+                )) {
+                    return;
+                }
+
+                remove.disabled = true;
+                remove.textContent = "Suppression...";
+
+                const { error: deleteError } = await supabaseClient
+                    .from("ai_knowledge")
+                    .delete()
+                    .eq("id", item.id);
+
+                if (deleteError) {
+                    alert(
+                        "Impossible de supprimer : " +
+                        deleteError.message
+                    );
+
+                    remove.disabled = false;
+                    remove.textContent = "🗑️ Supprimer";
+                    return;
+                }
+
+                if (editingKnowledgeId === item.id) {
+                    resetKnowledgeForm();
+                }
+
+                await loadKnowledgeList();
+            });
+
+            actions.append(edit, remove);
+
+            card.append(
+                question,
+                category,
+                answer,
+                keywords,
+                actions
+            );
+
+            list.appendChild(card);
+        });
+    }
+
+    form.addEventListener("submit", async event => {
+        event.preventDefault();
+
+        const question = questionInput.value.trim();
+        const answer = answerInput.value.trim();
+        const category = categoryInput.value;
+
+        const keywords = keywordsInput.value
+            .split(",")
+            .map(word => word.trim())
+            .filter(Boolean)
+            .slice(0, 30);
+
+        if (question.length < 3 || !answer) {
+            status.textContent =
+                "La question doit contenir au moins 3 caractères et la réponse ne doit pas être vide.";
+            status.classList.add("error");
+            return;
+        }
+
+        submit.disabled = true;
+        status.classList.remove("error");
+        status.textContent = editingKnowledgeId
+            ? "Enregistrement des modifications..."
+            : "Ajout de la connaissance...";
+
+        try {
+            let result;
+
+            const knowledgeData = {
+                question,
+                answer,
+                category,
+                keywords
+            };
+
+            if (editingKnowledgeId !== null) {
+                result = await supabaseClient
+                    .from("ai_knowledge")
+                    .update(knowledgeData)
+                    .eq("id", editingKnowledgeId);
+            } else {
+                result = await supabaseClient
+                    .from("ai_knowledge")
+                    .insert(knowledgeData);
+            }
+
+            if (result.error) {
+                throw result.error;
+            }
+
+            status.textContent = editingKnowledgeId
+                ? "Connaissance modifiée avec succès !"
+                : "Nouvelle connaissance ajoutée !";
+
+            resetKnowledgeForm();
+
+            await loadKnowledgeList();
+
+        } catch (error) {
+            console.error(
+                "Erreur gestion des connaissances :",
+                error
+            );
+
+            status.textContent =
+                "Erreur : " + error.message;
+
+            status.classList.add("error");
+
+        } finally {
+            submit.disabled = false;
+        }
+    });
+
+    await loadKnowledgeList();
+}
 
 // ======================================
 // TICKETS
