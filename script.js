@@ -686,6 +686,469 @@ function selectChannel(button) {
 }
 
 // ======================================
+// SYSTÈME D'AMIS
+// ======================================
+
+async function getFriendUsernames(userIds) {
+    const ids = [...new Set(userIds)].filter(Boolean);
+    if (!ids.length) return {};
+
+    const { data, error } = await supabaseClient
+        .from("profiles")
+        .select("id, username")
+        .in("id", ids);
+
+    if (error) throw error;
+
+    const result = {};
+    (data || []).forEach(profile => {
+        result[profile.id] = profile.username || "Membre";
+    });
+
+    return result;
+}
+
+function createFriendSection(title, description = "") {
+    const section = document.createElement("section");
+    section.className = "friends-section";
+
+    const heading = createAdminElement("h2", "", title);
+    section.appendChild(heading);
+
+    if (description) {
+        section.appendChild(createAdminElement("p", "muted", description));
+    }
+
+    return section;
+}
+
+function createFriendCard(username, statusText = "") {
+    const card = createAdminElement("div", "friend-card");
+    const info = createAdminElement("div", "friend-card-info");
+
+    const name = createAdminElement("strong", "", username);
+    info.appendChild(name);
+
+    if (statusText) {
+        info.appendChild(createAdminElement("small", "muted", statusText));
+    }
+
+    card.appendChild(info);
+    return card;
+}
+
+async function openFriendsPanel() {
+    if (!currentUser || !supabaseClient) return;
+
+    dmPanel.replaceChildren();
+
+    const heading = createAdminElement("h1", "admin-heading", "👥 Mes amis");
+    const description = createAdminElement(
+        "p",
+        "muted",
+        "Recherche des membres et gère tes demandes d'amitié."
+    );
+
+    const searchSection = createFriendSection(
+        "🔎 Rechercher un membre",
+        "Entre le pseudo d'un membre de Fractale Esport."
+    );
+
+    const searchForm = document.createElement("form");
+    searchForm.className = "friend-search-form";
+
+    const searchInput = document.createElement("input");
+    searchInput.type = "search";
+    searchInput.placeholder = "Rechercher par pseudo...";
+    searchInput.maxLength = 24;
+    searchInput.required = true;
+
+    const searchButton = createAdminElement("button", "primary-button", "Rechercher");
+    searchButton.type = "submit";
+
+    searchForm.append(searchInput, searchButton);
+
+    const searchStatus = createAdminElement("p", "admin-status", "");
+    const searchResults = createAdminElement("div", "friend-list");
+
+    searchSection.append(searchForm, searchStatus, searchResults);
+
+    const incomingSection = createFriendSection("📩 Demandes reçues");
+    const incomingList = createAdminElement("div", "friend-list");
+
+    incomingSection.appendChild(incomingList);
+
+    const outgoingSection = createFriendSection("📨 Demandes envoyées");
+    const outgoingList = createAdminElement("div", "friend-list");
+
+    outgoingSection.appendChild(outgoingList);
+
+    const friendsSection = createFriendSection("💜 Ma liste d'amis");
+    const friendsList = createAdminElement("div", "friend-list");
+
+    friendsSection.appendChild(friendsList);
+
+    dmPanel.append(
+        heading,
+        description,
+        searchSection,
+        incomingSection,
+        outgoingSection,
+        friendsSection
+    );
+
+    async function refreshFriendLists() {
+        incomingList.replaceChildren();
+        outgoingList.replaceChildren();
+        friendsList.replaceChildren();
+
+        try {
+            // Demandes reçues
+            const { data: incoming, error: incomingError } = await supabaseClient
+                .from("friend_requests")
+                .select("*")
+                .eq("receiver_id", currentUser.id)
+                .eq("status", "pending")
+                .order("created_at", { ascending: false });
+
+            if (incomingError) throw incomingError;
+
+            // Demandes envoyées
+            const { data: outgoing, error: outgoingError } = await supabaseClient
+                .from("friend_requests")
+                .select("*")
+                .eq("sender_id", currentUser.id)
+                .eq("status", "pending")
+                .order("created_at", { ascending: false });
+
+            if (outgoingError) throw outgoingError;
+
+            // Amitiés
+            const { data: friendships, error: friendshipError } = await supabaseClient
+                .from("friendships")
+                .select("*")
+                .or(
+                    `user_one.eq.${currentUser.id},user_two.eq.${currentUser.id}`
+                );
+
+            if (friendshipError) throw friendshipError;
+
+            const incomingIds = (incoming || []).map(item => item.sender_id);
+            const outgoingIds = (outgoing || []).map(item => item.receiver_id);
+
+            const friendIds = (friendships || []).map(item =>
+                item.user_one === currentUser.id
+                    ? item.user_two
+                    : item.user_one
+            );
+
+            const usernames = await getFriendUsernames([
+                ...incomingIds,
+                ...outgoingIds,
+                ...friendIds
+            ]);
+
+            // Afficher les demandes reçues
+            if (!incoming?.length) {
+                incomingList.appendChild(
+                    createAdminElement("p", "muted", "Aucune demande reçue.")
+                );
+            }
+
+            (incoming || []).forEach(request => {
+                const card = createFriendCard(
+                    usernames[request.sender_id] || "Membre",
+                    "Souhaite devenir ton ami."
+                );
+
+                const actions = createAdminElement("div", "friend-actions");
+
+                const accept = createAdminElement("button", "friend-accept", "✓ Accepter");
+                const reject = createAdminElement("button", "friend-reject", "✕ Refuser");
+
+                accept.addEventListener("click", async () => {
+                    accept.disabled = true;
+
+                    const { error: updateError } = await supabaseClient
+                        .from("friend_requests")
+                        .update({ status: "accepted" })
+                        .eq("id", request.id)
+                        .eq("receiver_id", currentUser.id);
+
+                    if (updateError) {
+                        alert("Impossible d'accepter la demande : " + updateError.message);
+                        accept.disabled = false;
+                        return;
+                    }
+
+                    const { error: insertError } = await supabaseClient
+                        .from("friendships")
+                        .insert({
+                            user_one: currentUser.id,
+                            user_two: request.sender_id
+                        });
+
+                    if (insertError) {
+                        alert(
+                            "La demande est acceptée, mais la création de l'amitié a échoué : " +
+                            insertError.message
+                        );
+                    }
+
+                    await refreshFriendLists();
+                });
+
+                reject.addEventListener("click", async () => {
+                    reject.disabled = true;
+
+                    const { error } = await supabaseClient
+                        .from("friend_requests")
+                        .update({ status: "rejected" })
+                        .eq("id", request.id)
+                        .eq("receiver_id", currentUser.id);
+
+                    if (error) {
+                        alert("Impossible de refuser la demande : " + error.message);
+                        reject.disabled = false;
+                        return;
+                    }
+
+                    await refreshFriendLists();
+                });
+
+                actions.append(accept, reject);
+                card.appendChild(actions);
+                incomingList.appendChild(card);
+            });
+
+            // Afficher les demandes envoyées
+            if (!outgoing?.length) {
+                outgoingList.appendChild(
+                    createAdminElement("p", "muted", "Aucune demande envoyée.")
+                );
+            }
+
+            (outgoing || []).forEach(request => {
+                const card = createFriendCard(
+                    usernames[request.receiver_id] || "Membre",
+                    "Demande en attente."
+                );
+
+                const cancel = createAdminElement("button", "friend-reject", "Annuler");
+
+                cancel.addEventListener("click", async () => {
+                    cancel.disabled = true;
+
+                    const { error } = await supabaseClient
+                        .from("friend_requests")
+                        .delete()
+                        .eq("id", request.id)
+                        .eq("sender_id", currentUser.id);
+
+                    if (error) {
+                        alert("Impossible d'annuler : " + error.message);
+                        cancel.disabled = false;
+                        return;
+                    }
+
+                    await refreshFriendLists();
+                });
+
+                card.appendChild(cancel);
+                outgoingList.appendChild(card);
+            });
+
+            // Afficher les amis
+            if (!friendIds.length) {
+                friendsList.appendChild(
+                    createAdminElement("p", "muted", "Tu n'as pas encore d'amis.")
+                );
+            }
+
+            (friendships || []).forEach(friendship => {
+                const friendId = friendship.user_one === currentUser.id
+                    ? friendship.user_two
+                    : friendship.user_one;
+
+                const card = createFriendCard(
+                    usernames[friendId] || "Membre",
+                    "Ami Fractale"
+                );
+
+                const remove = createAdminElement("button", "friend-reject", "Retirer");
+
+                remove.addEventListener("click", async () => {
+                    if (!confirm("Retirer ce membre de ta liste d'amis ?")) return;
+
+                    remove.disabled = true;
+
+                    const { error } = await supabaseClient
+                        .from("friendships")
+                        .delete()
+                        .eq("id", friendship.id);
+
+                    if (error) {
+                        alert("Impossible de retirer cet ami : " + error.message);
+                        remove.disabled = false;
+                        return;
+                    }
+
+                    await refreshFriendLists();
+                });
+
+                card.appendChild(remove);
+                friendsList.appendChild(card);
+            });
+
+        } catch (error) {
+            console.error("Erreur du système d'amis :", error);
+
+            incomingList.replaceChildren(
+                createAdminElement(
+                    "p",
+                    "admin-status error",
+                    "Erreur : " + error.message
+                )
+            );
+        }
+    }
+
+    // Recherche de membres
+    searchForm.addEventListener("submit", async event => {
+        event.preventDefault();
+
+        const query = searchInput.value.trim();
+
+        searchResults.replaceChildren();
+
+        if (query.length < 2) {
+            searchStatus.textContent = "Entre au moins 2 caractères.";
+            return;
+        }
+
+        searchButton.disabled = true;
+        searchStatus.textContent = "Recherche en cours...";
+
+        try {
+            const { data: profiles, error } = await supabaseClient
+                .from("profiles")
+                .select("id, username")
+                .ilike("username", `%${query}%`)
+                .neq("id", currentUser.id)
+                .limit(20);
+
+            if (error) throw error;
+
+            if (!profiles?.length) {
+                searchStatus.textContent = "Aucun membre trouvé.";
+                return;
+            }
+
+            searchStatus.textContent = `${profiles.length} membre(s) trouvé(s).`;
+
+            for (const profile of profiles) {
+                const card = createFriendCard(profile.username || "Membre");
+
+                const add = createAdminElement("button", "friend-add", "＋ Ajouter");
+
+                add.addEventListener("click", async () => {
+                    add.disabled = true;
+                    add.textContent = "Envoi...";
+
+                    try {
+                        // Vérifier si une amitié existe déjà.
+                        const { data: existingFriend, error: friendError } =
+                            await supabaseClient
+                                .from("friendships")
+                                .select("id")
+                                .or(
+                                    `and(user_one.eq.${currentUser.id},user_two.eq.${profile.id}),and(user_one.eq.${profile.id},user_two.eq.${currentUser.id})`
+                                )
+                                .limit(1);
+
+                        if (friendError) throw friendError;
+
+                        if (existingFriend?.length) {
+                            add.textContent = "Déjà amis";
+                            return;
+                        }
+
+                        // Vérifier les demandes dans les deux sens.
+                        const { data: existingRequests, error: requestError } =
+                            await supabaseClient
+                                .from("friend_requests")
+                                .select("id, sender_id, receiver_id, status")
+                                .or(
+                                    `and(sender_id.eq.${currentUser.id},receiver_id.eq.${profile.id}),and(sender_id.eq.${profile.id},receiver_id.eq.${currentUser.id})`
+                                );
+
+                        if (requestError) throw requestError;
+
+                        const pending = (existingRequests || []).find(
+                            item => item.status === "pending"
+                        );
+
+                        if (pending) {
+                            add.textContent = pending.sender_id === currentUser.id
+                                ? "Demande envoyée"
+                                : "Demande reçue";
+                            return;
+                        }
+
+                        // Supprimer une ancienne demande refusée du même expéditeur
+                        // pour pouvoir en envoyer une nouvelle.
+                        const oldRejected = (existingRequests || []).filter(
+                            item =>
+                                item.sender_id === currentUser.id &&
+                                item.status === "rejected"
+                        );
+
+                        for (const oldRequest of oldRejected) {
+                            const { error: deleteError } = await supabaseClient
+                                .from("friend_requests")
+                                .delete()
+                                .eq("id", oldRequest.id);
+
+                            if (deleteError) throw deleteError;
+                        }
+
+                        const { error: insertError } = await supabaseClient
+                            .from("friend_requests")
+                            .insert({
+                                sender_id: currentUser.id,
+                                receiver_id: profile.id,
+                                status: "pending"
+                            });
+
+                        if (insertError) throw insertError;
+
+                        add.textContent = "✓ Demande envoyée";
+                        await refreshFriendLists();
+
+                    } catch (error) {
+                        console.error(error);
+                        alert("Impossible d'envoyer la demande : " + error.message);
+                        add.disabled = false;
+                        add.textContent = "＋ Ajouter";
+                    }
+                });
+
+                card.appendChild(add);
+                searchResults.appendChild(card);
+            }
+
+        } catch (error) {
+            console.error("Erreur de recherche :", error);
+            searchStatus.textContent = "Erreur : " + error.message;
+        } finally {
+            searchButton.disabled = false;
+        }
+    });
+
+    await refreshFriendLists();
+}
+
+// ======================================
 // MODE SERVEUR / MESSAGES PRIVÉS
 // ======================================
 
