@@ -813,3 +813,139 @@ button { cursor: pointer; }
     .role-select, .role-save { width: 100%; }
     .ticket-reply { flex-direction: column; }
 }
+
+/* ======================================
+   SYSTÈME D'AMIS
+====================================== */
+
+#dmPanel {
+    padding: 12px 5px;
+}
+
+.friends-section {
+    margin: 22px 0;
+    padding: 18px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.friends-section h2 {
+    margin: 0 0 10px;
+    font-size: 19px;
+}
+
+.friend-search-form {
+    display: flex;
+    gap: 9px;
+    margin-top: 15px;
+}
+
+.friend-search-form input {
+    flex: 1;
+    min-width: 0;
+    padding: 12px;
+    color: white;
+    background: #171b30;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    outline: none;
+}
+
+.friend-search-form input:focus {
+    border-color: var(--purple);
+}
+
+.friend-search-form button {
+    flex-shrink: 0;
+}
+
+.friend-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.friend-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 13px;
+    background: #171b30;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+}
+
+.friend-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 100px;
+    overflow-wrap: anywhere;
+}
+
+.friend-card-info strong {
+    color: var(--text);
+}
+
+.friend-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.friend-card button {
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    color: white;
+    cursor: pointer;
+}
+
+.friend-add,
+.friend-accept {
+    background: #29234b;
+}
+
+.friend-reject {
+    background: #30202c;
+}
+
+.friend-card button:hover {
+    border-color: var(--purple);
+}
+
+.friend-card button:disabled {
+    opacity: .6;
+    cursor: wait;
+}
+
+@media (max-width: 500px) {
+    .friend-search-form {
+        flex-direction: column;
+    }
+
+    .friend-search-form button {
+        width: 100%;
+    }
+
+    .friend-card {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .friend-card button {
+        width: 100%;
+    }
+
+    .friend-actions {
+        width: 100%;
+    }
+
+    .friend-actions button {
+        flex: 1;
+    }
+}
