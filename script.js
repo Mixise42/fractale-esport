@@ -717,10 +717,10 @@ dmMode.addEventListener("click", () => {
     serverMode.classList.remove("selected");
     ticketsButton.classList.remove("selected");
 
-    pageTitle.textContent = "Messages privés";
+    pageTitle.textContent = "Amis";
     messageForm.hidden = true;
 
-    showWelcome("Messages privés");
+    openFriendsPanel();
 });
 
 // ======================================
